@@ -1,0 +1,110 @@
+.configuracion-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-6);
+}
+
+.page-header h1 {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    font-size: var(--font-size-2xl);
+    margin-bottom: var(--spacing-1);
+}
+
+.page-header p {
+    color: var(--gray-500);
+}
+
+.config-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: var(--spacing-6);
+    min-height: 500px;
+}
+
+.config-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+}
+
+.config-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-4);
+    border: none;
+    background: white;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    color: var(--gray-600);
+    transition: all var(--transition-fast);
+    text-align: left;
+}
+
+.config-tab:hover {
+    background: var(--gray-50);
+}
+
+.config-tab.active {
+    background: var(--primary-50);
+    color: var(--primary-600);
+    font-weight: 500;
+}
+
+.config-content {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-6);
+}
+
+.config-section h2 {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-5);
+    color: var(--gray-800);
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+}
+
+.toggle-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+.toggle-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-4);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .config-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .config-sidebar {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
