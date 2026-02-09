@@ -5,7 +5,7 @@ echo   Puerto: 3306 (nuevo)
 echo ============================================
 echo.
 
-cd /d "C:\Program Files\MySQL\MySQL Server 8.0\bin"
+cd /d "C:\Program Files\MySQL\MySQL Server 9.5\bin"
 
 echo Conectando a MySQL...
 mysql.exe -u root -pSiscom2026 -e "SELECT 'Conexion OK' as Estado;"
@@ -13,7 +13,7 @@ mysql.exe -u root -pSiscom2026 -e "SELECT 'Conexion OK' as Estado;"
 if %errorlevel% equ 0 (
     echo.
     echo Conexion exitosa! Creando base de datos...
-    mysql.exe -u root -pSiscom2026 < "c:\Users\telep\OneDrive\Desktop\SISCOM\database\schema.sql"
+    mysql.exe -u root -pSiscom2026 < "c:\Users\Fernando\SISCOM\database\schema.sql"
     
     if %errorlevel% equ 0 (
         echo.
