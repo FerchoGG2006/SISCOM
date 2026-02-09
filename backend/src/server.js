@@ -11,7 +11,9 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 
 // Importar configuraciones
-const { pool, testConnection } = require('./config/database');
+// Importar configuraciones
+const { testConnection } = require('./config/database');
+const initDatabase = require('./database/init');
 const logger = require('./config/logger');
 
 // Importar rutas
@@ -163,7 +165,9 @@ async function startServer() {
     try {
         // Probar conexión a la base de datos
         await testConnection();
-        logger.info('✅ Conexión a MySQL establecida correctamente');
+        // Inicializar base de datos SQLite
+        await initDatabase();
+        logger.info('✅ Conexión a SQLite establecida y base de datos inicializada');
 
         // Iniciar servidor
         app.listen(PORT, () => {
