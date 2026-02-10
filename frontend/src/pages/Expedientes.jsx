@@ -3,13 +3,13 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
-    Search,
-    Filter,
-    FileText,
-    Eye,
-    ChevronLeft,
-    ChevronRight,
-    PlusCircle
+  Search,
+  Filter,
+  FileText,
+  Eye,
+  ChevronLeft,
+  ChevronRight,
+  PlusCircle
 } from 'lucide-react';
 import { GlassCard, StyledInput } from '../components/common/GlassCard';
 
@@ -98,15 +98,15 @@ const RiskBadge = styled.span`
   font-size: 0.7rem;
   font-weight: 800;
   background: ${props => {
-        if (props.level === 'extremo' || props.level === 'Crítico') return 'rgba(239, 68, 68, 0.1)';
-        if (props.level === 'alto' || props.level === 'Moderado') return 'rgba(245, 158, 11, 0.1)';
-        return 'rgba(16, 185, 129, 0.1)';
-    }};
+    if (props.level === 'extremo' || props.level === 'Crítico') return 'rgba(239, 68, 68, 0.1)';
+    if (props.level === 'alto' || props.level === 'Moderado') return 'rgba(245, 158, 11, 0.1)';
+    return 'rgba(16, 185, 129, 0.1)';
+  }};
   color: ${props => {
-        if (props.level === 'extremo' || props.level === 'Crítico') return '#DC2626';
-        if (props.level === 'alto' || props.level === 'Moderado') return '#D97706';
-        return '#059669';
-    }};
+    if (props.level === 'extremo' || props.level === 'Crítico') return '#DC2626';
+    if (props.level === 'alto' || props.level === 'Moderado') return '#D97706';
+    return '#059669';
+  }};
 `;
 
 const ActionButton = styled(Link)`
@@ -123,29 +123,29 @@ const ActionButton = styled(Link)`
 `;
 
 export default function Expedientes() {
-    const [searchParams] = useSearchParams();
-    const [expedientes, setExpedientes] = useState([
-        { id: 1, radicado: 'HS-2026-00045', victima: 'María García López', agresor: 'Juan Pérez', nivel_riesgo: 'Crítico', fecha: '2026-02-04' },
-        { id: 2, radicado: 'HS-2026-00044', victima: 'Ana Rodríguez M.', agresor: 'Carlos Gómez', nivel_riesgo: 'Moderado', fecha: '2026-02-03' },
-        { id: 3, radicado: 'HS-2026-00043', victima: 'Carmen López', agresor: 'Pedro Martínez', nivel_riesgo: 'Bajo', fecha: '2026-02-02' },
-    ]);
+  const [searchParams] = useSearchParams();
+  const [expedientes, setExpedientes] = useState([
+    { id: 1, radicado: 'HS-2026-00045', victima: 'María García López', agresor: 'Juan Pérez', nivel_riesgo: 'Crítico', fecha: '2026-02-04' },
+    { id: 2, radicado: 'HS-2026-00044', victima: 'Ana Rodríguez M.', agresor: 'Carlos Gómez', nivel_riesgo: 'Moderado', fecha: '2026-02-03' },
+    { id: 3, radicado: 'HS-2026-00043', victima: 'Carmen López', agresor: 'Pedro Martínez', nivel_riesgo: 'Bajo', fecha: '2026-02-02' },
+  ]);
 
-    return (
+  return (
     <PageContainer>
       <PageHeader>
         <div>
           <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Expedientes</h1>
           <p style={{ color: 'var(--text-muted)' }}>Listado histórico y gestión de casos.</p>
         </div>
-        <Link to="/radicacion" style={{ 
-          background: 'var(--primary)', 
-          color: 'white', 
-          padding: '0.75rem 1.5rem', 
-          borderRadius: '12px', 
-          textDecoration: 'none', 
+        <Link to="/radicacion" style={{
+          background: 'var(--primary)',
+          color: 'white',
+          padding: '0.75rem 1.5rem',
+          borderRadius: '12px',
+          textDecoration: 'none',
           fontWeight: 600,
           display: 'flex',
-          align-items: 'center',
+          alignItems: 'center',
           gap: '0.5rem'
         }}>
           <PlusCircle size={18} />
@@ -185,7 +185,7 @@ export default function Expedientes() {
           </thead>
           <tbody>
             {expedientes.map(exp => (
-              <motion.tr 
+              <motion.tr
                 key={exp.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

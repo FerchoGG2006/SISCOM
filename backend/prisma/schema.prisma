@@ -70,3 +70,20 @@ model EvaluacionRiesgo {
 
   @@map("evaluaciones_riesgo")
 }
+
+// 4. Tabla de Usuarios (Sistema)
+model Usuario {
+  id               Int      @id @default(autoincrement())
+  nombres          String
+  apellidos        String
+  email            String   @unique
+  password         String
+  rol              String   @default("auxiliar") // 'admin', 'comisario', 'psicologo', etc.
+  cargo            String?
+  activo           Boolean  @default(true)
+  ultimo_acceso    DateTime?
+  created_at       DateTime @default(now())
+
+  @@map("usuarios")
+}
+
