@@ -152,7 +152,7 @@ export default function ExpedienteDetalle() {
                     </div>
                 </div>
 
-                {expediente.carpeta_drive_url && (
+                {expediente.carpeta_drive_url && !expediente.carpeta_drive_url.includes('PENDING') ? (
                     <a
                         href={expediente.carpeta_drive_url}
                         target="_blank"
@@ -163,8 +163,31 @@ export default function ExpedienteDetalle() {
                         Abrir en Drive
                         <ExternalLink size={14} />
                     </a>
+                ) : (
+                    <button
+                        className="btn btn-danger"
+                        onClick={async () => {
+                            setGenerating(true);
+                            try {
+                                const res = await api.post(`/expedientes/${id}/sync-drive`);
+                                if (res.data.success) {
+                                    alert('Carpeta de Drive creada exitosamente');
+                                    loadExpediente();
+                                }
+                            } catch (e) {
+                                alert('Error al sincronizar con Drive');
+                            } finally {
+                                setGenerating(false);
+                            }
+                        }}
+                        disabled={generating}
+                    >
+                        <AlertTriangle size={18} />
+                        Sincronizar Drive
+                    </button>
                 )}
             </div>
+
 
             {/* Tabs */}
             <div className="tabs">

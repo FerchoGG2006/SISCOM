@@ -9,7 +9,9 @@ router.use(authMiddleware);
 
 router.get('/', ExpedientesController.listar);
 router.get('/:id', ExpedientesController.obtener);
+router.post('/:id/sync-drive', ExpedientesController.syncDrive);
 router.post('/:id/actuaciones', ActuacionController.crear);
+
 router.post('/:id/documentos/:tipo', DocumentoController.generar);
 
 module.exports = router;

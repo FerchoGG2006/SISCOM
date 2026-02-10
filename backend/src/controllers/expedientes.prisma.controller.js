@@ -1,5 +1,7 @@
 const prisma = require('../lib/prisma');
 const logger = require('../config/logger');
+const driveService = require('../services/driveService');
+
 
 class ExpedientesPrismaController {
     /**
@@ -92,6 +94,37 @@ class ExpedientesPrismaController {
             });
         }
     }
+    /**
+
+     * POST /api/v1/expedientes/:id/sync-drive
+     * Repara o crea la carpeta de Drive si está en PENDING
+     */
+    static async syncDrive(req, res) {
+        try {
+            const { id } = req.params;
+            const expediente = await prisma.expediente.findUnique({
+                where: { id: parseInt(id) },
+                include: { victima: true }
+            });
+
+            if (!expediente) return res.status(404).json({ success: false, message: 'Expediente no encontrado' });
+
+            const victimName = `${expediente.victima.nombres} ${expediente.victima.apellidos}`;
+            const folderId = await driveService.createCaseFolder(expediente.radicado_hs, victimName);
+
+            await prisma.expediente.update({
+                where: { id: expediente.id },
+                data: { drive_folder_id: folderId }
+            });
+
+            res.json({ success: true, message: 'Carpeta sincronizada', folderId });
+        } catch (error) {
+            logger.error('Error sincronizando drive:', error);
+            res.status(500).json({ success: false, message: 'Error en sincronización' });
+        }
+    }
 }
+
+
 
 module.exports = ExpedientesPrismaController;

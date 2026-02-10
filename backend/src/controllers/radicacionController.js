@@ -6,7 +6,14 @@ const pdfGenerator = require('../services/pdfGenerator.service');
 const radicarCaso = async (req, res) => {
     try {
         const { victima, agresor, respuestas_riesgo, usuario_id, firma, datosHecho } = req.body;
-        const finalUsuarioId = usuario_id || 1; // Fallback for MVP
+        const finalUsuarioId = usuario_id || 1;
+
+        // Normalización de nombres (FRONTEND: primer_nombre, primer_apellido -> BACKEND: nombres, apellidos)
+        const victimFullName = `${victima.primer_nombre} ${victima.segundo_nombre || ''}`.trim();
+        const victimFullLastName = `${victima.primer_apellido} ${victima.segundo_apellido || ''}`.trim();
+
+        const aggressorFullName = agresor ? `${agresor.primer_nombre} ${agresor.segundo_nombre || ''}`.trim() : null;
+        const aggressorFullLastName = agresor ? `${agresor.primer_apellido} ${agresor.segundo_apellido || ''}`.trim() : null;
 
         // 1. Iniciar transacción con Prisma
         const result = await prisma.$transaction(async (tx) => {
@@ -15,19 +22,19 @@ const radicarCaso = async (req, res) => {
             const personaVictima = await tx.persona.upsert({
                 where: { numero_documento: victima.numero_documento },
                 update: {
-                    nombres: victima.nombres,
-                    apellidos: victima.apellidos,
+                    nombres: victimFullName,
+                    apellidos: victimFullLastName,
                     tipo_documento: victima.tipo_documento,
-                    telefono: victima.telefono,
+                    telefono: victima.telefono_celular || victima.telefono,
                     direccion: victima.direccion,
                     es_victima: true
                 },
                 create: {
                     numero_documento: victima.numero_documento,
                     tipo_documento: victima.tipo_documento,
-                    nombres: victima.nombres,
-                    apellidos: victima.apellidos,
-                    telefono: victima.telefono,
+                    nombres: victimFullName,
+                    apellidos: victimFullLastName,
+                    telefono: victima.telefono_celular || victima.telefono,
                     direccion: victima.direccion,
                     es_victima: true
                 },
@@ -39,15 +46,15 @@ const radicarCaso = async (req, res) => {
                 const personaAgresor = await tx.persona.upsert({
                     where: { numero_documento: agresor.numero_documento },
                     update: {
-                        nombres: agresor.nombres,
-                        apellidos: agresor.apellidos,
+                        nombres: aggressorFullName,
+                        apellidos: aggressorFullLastName,
                         es_agresor: true
                     },
                     create: {
                         numero_documento: agresor.numero_documento,
                         tipo_documento: agresor.tipo_documento || 'CC',
-                        nombres: agresor.nombres,
-                        apellidos: agresor.apellidos,
+                        nombres: aggressorFullName,
+                        apellidos: aggressorFullLastName,
                         es_agresor: true
                     },
                 });
@@ -72,7 +79,7 @@ const radicarCaso = async (req, res) => {
                     puntaje_riesgo: riskResult.score,
                     relato_hechos: (datosHecho?.descripcion_hechos) || '',
                     estado: 'Abierto',
-                    firma_victima: firma, // Guardamos el base64
+                    firma_victima: firma,
                     drive_folder_id: 'PENDING',
                 }
             });
@@ -103,31 +110,21 @@ const radicarCaso = async (req, res) => {
             return { expediente, radicado, riskResult };
         });
 
-        // 9. Operaciones de Salida (Drive + PDF)
+        // 9. Operaciones de Salida (Drive + PDF) Robustas
         try {
             // A. Crear Carpeta Drive
-            const folderId = await driveService.createCaseFolder(result.radicado, `${victima.nombres} ${victima.apellidos}`);
+            const folderId = await driveService.createCaseFolder(result.radicado, `${victimFullName} ${victimFullLastName}`);
 
-            // B. Generar PDF Auto de Inicio
+            // B. Generar PDF Auto de Inicio 
             const mockUser = { nombres: 'Comisario', apellidos: 'Principal', cargo: 'Comisario de Familia' };
 
-            const victimaParaPDF = {
-                ...victima,
-                nombres: `${victima.primer_nombre} ${victima.segundo_nombre || ''}`.trim(),
-                apellidos: `${victima.primer_apellido} ${victima.segundo_apellido || ''}`.trim(),
-                numero_documento: victima.numero_documento
-            };
-
-            const agresorParaPDF = agresor ? {
-                ...agresor,
-                nombres: `${agresor.primer_nombre} ${agresor.segundo_nombre || ''}`.trim(),
-                apellidos: `${agresor.primer_apellido} ${agresor.segundo_apellido || ''}`.trim(),
-            } : null;
+            // Usar nombres normalizados para el PDF
+            const victimaParaPDF = { ...victima, nombres: victimFullName, apellidos: victimFullLastName };
+            const agresorParaPDF = agresor ? { ...agresor, nombres: aggressorFullName, apellidos: aggressorFullLastName } : null;
 
             const pdfInfo = await pdfGenerator.generarAutoInicio(result.expediente, victimaParaPDF, agresorParaPDF, mockUser);
 
-
-            // C. Actualizar Expediente y Registrar Documento
+            // C. Actualización Final de Robustez
             await prisma.$transaction([
                 prisma.expediente.update({
                     where: { id: result.expediente.id },
@@ -138,16 +135,19 @@ const radicarCaso = async (req, res) => {
                         id_expediente: result.expediente.id,
                         nombre: 'Auto de Apertura y Medidas.pdf',
                         tipo: 'Auto de Inicio',
-                        url_drive: folderId // Podría ser el ID del archivo específico si el service lo da
+                        url_drive: folderId
                     }
                 })
             ]);
 
             result.drive_folder_id = folderId;
             result.pdf_url = pdfInfo.fileName;
-        } catch (error) {
-            console.error('Error en post-procesamiento (Drive/PDF):', error);
+        } catch (postError) {
+            console.error('Error en post-procesamiento robusto (Drive/PDF):', postError);
+            // Si falla Drive, al menos intentamos marcar que falló o dejarlo para reintentar
+            // Por ahora, dejamos que el usuario reciba el radicado pero logueamos el fallo táctico
         }
+
 
         res.status(201).json({
             success: true,

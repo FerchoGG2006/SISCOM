@@ -13,6 +13,8 @@ import ExpedienteDetalle from './pages/ExpedienteDetalle';
 import Usuarios from './pages/Usuarios';
 import Reportes from './pages/Reportes';
 import Configuracion from './pages/Configuracion';
+import Personas from './pages/Personas';
+
 
 function PrivateRoute({ children }) {
     const { isAuthenticated } = useAuthStore();
@@ -40,7 +42,9 @@ function App() {
                         <Route path="expedientes/:id" element={<ExpedienteDetalle />} />
                         <Route path="usuarios" element={<Usuarios />} />
                         <Route path="reportes" element={<Reportes />} />
+                        <Route path="personas" element={<Personas />} />
                         <Route path="config" element={<Configuracion />} />
+
                         {/* Fallback for old routes */}
                         <Route path="radicar" element={<Navigate to="/radicacion" replace />} />
                         <Route path="configuracion" element={<Navigate to="/config" replace />} />

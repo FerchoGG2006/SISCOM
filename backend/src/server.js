@@ -9,8 +9,10 @@ const authRoutes = require('./routes/auth.routes');
 const radicacionRoutes = require('./routes/radicacionRoutes');
 const expedientesRoutes = require('./routes/expedientes.routes');
 const reportesRoutes = require('./routes/reportes.routes');
+const personasRoutes = require('./routes/personas.routes');
 
 const app = express();
+
 const PORT = process.env.PORT || 4000; // Standardize port
 
 // Middleware
@@ -32,7 +34,9 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/radicar', radicacionRoutes);
 app.use('/api/v1/expedientes', expedientesRoutes);
 app.use('/api/v1/reportes', reportesRoutes);
+app.use('/api/v1/personas', personasRoutes);
 app.get('/api/v1/search', searchController.searchAll);
+
 
 
 

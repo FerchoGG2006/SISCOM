@@ -10,8 +10,12 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  UserCircle,
+  BarChart,
+  UserCog
 } from 'lucide-react';
+
 import { Outlet } from 'react-router-dom';
 
 const LayoutContainer = styled.div`
@@ -126,10 +130,14 @@ const CollapseButton = styled.button`
 
 const menuItems = [
   { icon: <BarChart3 size={20} />, label: 'Dashboard', path: '/' },
-  { icon: <FileText size={20} />, label: 'Radicacion', path: '/radicacion' },
+  { icon: <FileText size={20} />, label: 'Radicación', path: '/radicacion' },
   { icon: <Users size={20} />, label: 'Expedientes', path: '/expedientes' },
+  { icon: <UserCircle size={20} />, label: 'Personas', path: '/personas' },
+  { icon: <BarChart size={20} />, label: 'Reportes', path: '/reportes' },
+  { icon: <UserCog size={20} />, label: 'Usuarios', path: '/usuarios' },
   { icon: <Settings size={20} />, label: 'Configuración', path: '/config' },
 ];
+
 
 export const Layout = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
