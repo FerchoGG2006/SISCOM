@@ -12,6 +12,18 @@ async function initDatabase() {
         // Habilitar claves foráneas
         await db.query('PRAGMA foreign_keys = ON');
 
+        // Eliminar tablas existentes para garantizar esquema fresco
+        await db.query('DROP TABLE IF EXISTS auditoria');
+        await db.query('DROP TABLE IF EXISTS configuracion_sistema');
+        await db.query('DROP TABLE IF EXISTS notificaciones');
+        await db.query('DROP TABLE IF EXISTS actuaciones');
+        await db.query('DROP TABLE IF EXISTS documentos');
+        await db.query('DROP TABLE IF EXISTS valoracion_riesgo');
+        await db.query('DROP TABLE IF EXISTS expediente_personas');
+        await db.query('DROP TABLE IF EXISTS expedientes');
+        await db.query('DROP TABLE IF EXISTS personas');
+        await db.query('DROP TABLE IF EXISTS usuarios');
+
         // =====================================================
         // TABLA: usuarios
         // =====================================================

@@ -35,8 +35,9 @@ class ExpedientesController {
                 const victimaId = victimaResult.insertId;
 
                 // 3. Guardar datos del agresor
+                const { parentesco_con_victima, ...agresorFields } = agresor;
                 const agresorData = {
-                    ...agresor,
+                    ...agresorFields,
                     rol_en_caso: 'agresor',
                     usuario_registro_id: usuarioId
                 };

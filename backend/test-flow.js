@@ -50,6 +50,8 @@ async function runtest() {
             direccion: 'Calle 123 # 45-67'
         },
         agresor: {
+            tipo_documento: 'CC',
+            numero_documento: '987654321',
             primer_nombre: 'Juan',
             primer_apellido: 'Gómez',
             parentesco_con_victima: 'Pareja',
