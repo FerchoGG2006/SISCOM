@@ -1,0 +1,71 @@
+// SISCOM Database Schema (SQLite Version)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// 1. Tabla de Personas (Unificada)
+model Persona {
+  id               Int      @id @default(autoincrement())
+  tipo_documento   String   // 'CC', 'TI', 'CE', 'RC', 'PPT', 'Otro'
+  numero_documento String   @unique
+  nombres          String
+  apellidos        String
+  fecha_nacimiento String?  // SQLite guarda fechas como TEXT (ISO8601)
+  genero           String?  // 'Femenino', 'Masculino', 'No Binario', 'Otro'
+  ocupacion        String?
+  escolaridad      String?
+  telefono         String?
+  direccion        String?
+  barrio           String?
+  comuna           String?
+  es_victima       Boolean  @default(false)
+  es_agresor       Boolean  @default(false)
+  created_at       DateTime @default(now())
+
+  expedientesVictima Expediente[] @relation("Victima")
+  expedientesAgresor Expediente[] @relation("Agresor")
+
+  @@map("personas")
+}
+
+// 2. Tabla de Expedientes
+model Expediente {
+  id               Int      @id @default(autoincrement())
+  radicado_hs      String   @unique // Ej: HS-2026-001
+  id_victima       Int
+  id_agresor       Int?
+  fecha_radicacion DateTime @default(now())
+  relato_hechos    String?
+  
+  // Resultados Riesgo
+  puntaje_riesgo   Int      @default(0)
+  nivel_riesgo     String   @default("Bajo") // 'Bajo', 'Moderado', 'Crítico'
+  
+  // Google Drive ID
+  drive_folder_id  String?
+  
+  victima  Persona @relation("Victima", fields: [id_victima], references: [id])
+  agresor  Persona? @relation("Agresor", fields: [id_agresor], references: [id])
+  evaluaciones EvaluacionRiesgo[]
+
+  @@map("expedientes")
+}
+
+// 3. Tabla de Evaluaciones
+model EvaluacionRiesgo {
+  id               Int      @id @default(autoincrement())
+  id_expediente    Int
+  pregunta_numero  Int
+  respuesta        Boolean  @default(false) // false = NO, true = SI
+  valor_asignado   Int      @default(0)
+  categoria        String?
+  
+  expediente Expediente @relation(fields: [id_expediente], references: [id])
+
+  @@map("evaluaciones_riesgo")
+}
