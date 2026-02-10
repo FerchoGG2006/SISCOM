@@ -160,9 +160,10 @@ export default function Expedientes() {
     <PageContainer>
       <PageHeader>
         <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Expedientes</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Listado histórico y gestión de casos.</p>
+          <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--text-main)', letterSpacing: '-0.02em' }}>Expedientes</h1>
+          <p style={{ color: 'var(--text-main)', opacity: 0.7, fontWeight: 600 }}>Listado histórico y gestión de casos robustos.</p>
         </div>
+
         <Link to="/radicacion" style={{
           background: 'var(--primary)',
           color: 'white',

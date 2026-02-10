@@ -63,9 +63,15 @@ class ExpedientesPrismaController {
                 include: {
                     victima: true,
                     agresor: true,
-                    evaluaciones: true
+                    evaluaciones: true,
+                    actuaciones: {
+                        include: { usuario: { select: { nombres: true, apellidos: true } } },
+                        orderBy: { fecha: 'desc' }
+                    },
+                    documentos: true
                 }
             });
+
 
             if (!expediente) {
                 return res.status(404).json({

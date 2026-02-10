@@ -9,9 +9,13 @@
 }
 
 .radicar-header h1 {
-    font-size: 2rem;
-    margin-bottom: 4px;
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+    color: var(--text-main);
+    letter-spacing: -0.03em;
 }
+
 
 .radicar-header p {
     color: var(--text-dim);
@@ -34,6 +38,7 @@
     right: 40px;
     height: 2px;
     background: var(--border-glass);
+    background: var(--gray-200);
     z-index: 0;
 }
 
@@ -58,37 +63,37 @@
     height: 40px;
     border-radius: 50%;
     /* Glass Circle */
-    background: rgba(15, 23, 42, 0.6);
-    border: 2px solid var(--border-glass);
+    background: white;
+    border: 2px solid var(--gray-200);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-dim);
+    color: var(--text-muted);
     transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow);
 }
 
 .stepper-step.active .stepper-circle {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    border-color: var(--primary);
+    color: var(--primary);
     box-shadow: 0 0 15px var(--primary-glow);
-    background: var(--bg-dark);
+    background: white;
 }
 
 .stepper-step.completed .stepper-circle {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
+    background: var(--primary);
+    border-color: var(--primary);
     color: white;
 }
 
 .stepper-label {
     font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-dim);
+    font-weight: 700;
+    color: var(--text-muted);
 }
 
 .stepper-step.active .stepper-label {
-    color: var(--primary-color);
+    color: var(--text-main);
 }
 
 
@@ -225,59 +230,62 @@
 }
 
 .form-section-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--text-white);
-    margin-bottom: 20px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 24px;
     padding-bottom: 8px;
-    border-bottom: 2px solid var(--primary-color);
+    border-bottom: 3px solid var(--primary);
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-family: var(--font-accent);
+    gap: 12px;
 }
 
-/* Added Grouping Card Style */
+/* Grouping Card Style - Restored to Light Aesthetic */
 .form-section-card {
-    background: var(--bg-card);
-    /* Glass */
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--border-glass);
+    background: white;
+    border: 1px solid var(--gray-200);
     border-radius: var(--radius-lg);
-    padding: 24px;
+    padding: 30px;
     margin-bottom: 24px;
-    box-shadow: var(--shadow-premium);
+    box-shadow: var(--shadow);
 }
 
-.form-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-    max-width: 500px;
     width: 100%;
-    padding: 10px 14px;
+    padding: 14px 18px;
     border-radius: var(--radius-md);
-    /* Glass Input */
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: var(--text-white);
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    color: var(--text-main);
+    font-weight: 500;
+    font-size: 0.95rem;
     transition: all 0.2s;
-    font-family: inherit;
 }
 
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
     outline: none;
-    background: rgba(15, 23, 42, 0.8);
 }
+
+
+
 
 /* Validation */
 .form-group input.is-invalid,
@@ -294,9 +302,17 @@
     display: block;
 }
 
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-bottom: 20px;
+}
+
 .form-row.two-cols {
     grid-template-columns: repeat(2, 1fr);
 }
+
 
 @media (max-width: 768px) {
 

@@ -87,9 +87,12 @@ export default function RadicarCaso() {
             const payload = {
                 victima: formData.victima,
                 agresor: formData.agresor,
+                datosHecho: formData.datosHecho,
                 respuestas_riesgo: riskAnswers,
+                firma: formData.firma?.firma, // Base64 string
                 usuario_id: 1 // Default user for MVP
             }
+
 
             // Post to new endpoint (client baseURL includes /api/v1)
             const response = await api.post('/radicar', payload)
@@ -201,11 +204,12 @@ export default function RadicarCaso() {
                         </button>
                         <button
                             className="btn-premium"
-                            style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid var(--border-glass)' }}
+                            style={{ background: 'var(--gray-100)', color: 'var(--text-main)', border: '1px solid var(--gray-200)' }}
                             onClick={() => window.location.reload()}
                         >
                             Radicar Otro Caso
                         </button>
+
                     </div>
                 </div>
             </div>
@@ -259,10 +263,11 @@ export default function RadicarCaso() {
             <div className="step-navigation">
                 <button
                     className="btn-premium"
-                    style={{ background: 'rgba(255,255,255,0.05)', color: 'white', border: '1px solid var(--border-glass)' }}
+                    style={{ background: 'var(--gray-100)', color: 'var(--text-main)', border: '1px solid var(--gray-200)' }}
                     onClick={prevStep}
                     disabled={currentStep === 1}
                 >
+
                     <ArrowLeft size={18} />
                     Anterior
                 </button>

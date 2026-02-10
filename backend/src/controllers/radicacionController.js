@@ -3,10 +3,10 @@ const riskService = require('../services/riskService');
 const driveService = require('../services/driveService');
 const pdfGenerator = require('../services/pdfGenerator.service');
 
-
 const radicarCaso = async (req, res) => {
     try {
-        const { victima, agresor, respuestas_riesgo, usuario_id } = req.body;
+        const { victima, agresor, respuestas_riesgo, usuario_id, firma, datosHecho } = req.body;
+        const finalUsuarioId = usuario_id || 1; // Fallback for MVP
 
         // 1. Iniciar transacción con Prisma
         const result = await prisma.$transaction(async (tx) => {
@@ -59,7 +59,7 @@ const radicarCaso = async (req, res) => {
 
             // 5. Generar Radicado
             const year = new Date().getFullYear();
-            const count = await tx.expediente.count();
+            const count = await tx.expediente.count({ where: { fecha_radicacion: { gte: new Date(`${year}-01-01`) } } });
             const radicado = `HS-${year}-${String(count + 1).padStart(5, '0')}`;
 
             // 6. Crear Expediente
@@ -70,8 +70,10 @@ const radicarCaso = async (req, res) => {
                     id_agresor: personaAgresorId,
                     nivel_riesgo: riskResult.level,
                     puntaje_riesgo: riskResult.score,
-                    relato_hechos: req.body.relato_hechos || '',
-                    drive_folder_id: 'PENDING', // Se actualizará después o se maneja asíncrono
+                    relato_hechos: (datosHecho?.descripcion_hechos) || '',
+                    estado: 'Abierto',
+                    firma_victima: firma, // Guardamos el base64
+                    drive_folder_id: 'PENDING',
                 }
             });
 
@@ -82,32 +84,64 @@ const radicarCaso = async (req, res) => {
                         id_expediente: expediente.id,
                         pregunta_numero: index + 1,
                         respuesta: resp === true || resp === 1,
-                        valor_asignado: 0, // Podría calcularse aquí si el service lo da por ítem
+                        valor_asignado: 0,
                         categoria: 'General'
                     }))
                 });
             }
 
+            // 8. Crear Actuación Inicial
+            await tx.actuacion.create({
+                data: {
+                    id_expediente: expediente.id,
+                    id_usuario: finalUsuarioId,
+                    tipo: 'Radicación',
+                    descripcion: `Radicación exitosa del caso ${radicado}. Nivel de riesgo detectado: ${riskResult.level}.`
+                }
+            });
+
             return { expediente, radicado, riskResult };
         });
 
-        // 8. Operaciones de Salida (Drive + PDF)
+        // 9. Operaciones de Salida (Drive + PDF)
         try {
             // A. Crear Carpeta Drive
             const folderId = await driveService.createCaseFolder(result.radicado, `${victima.nombres} ${victima.apellidos}`);
 
             // B. Generar PDF Auto de Inicio
-            // Mock de usuario para el PDF (En producción usar req.user)
-            const mockUser = { nombres: 'Comisario', apellidos: 'de Familia', cargo: 'Comisario(a)' };
-            const pdfInfo = await pdfGenerator.generarAutoInicio(result.expediente, victima, agresor, mockUser);
+            const mockUser = { nombres: 'Comisario', apellidos: 'Principal', cargo: 'Comisario de Familia' };
 
-            await prisma.expediente.update({
-                where: { id: result.expediente.id },
-                data: {
-                    drive_folder_id: folderId,
-                    // Aquí se podría guardar el path del PDF si la tabla lo permite
-                }
-            });
+            const victimaParaPDF = {
+                ...victima,
+                nombres: `${victima.primer_nombre} ${victima.segundo_nombre || ''}`.trim(),
+                apellidos: `${victima.primer_apellido} ${victima.segundo_apellido || ''}`.trim(),
+                numero_documento: victima.numero_documento
+            };
+
+            const agresorParaPDF = agresor ? {
+                ...agresor,
+                nombres: `${agresor.primer_nombre} ${agresor.segundo_nombre || ''}`.trim(),
+                apellidos: `${agresor.primer_apellido} ${agresor.segundo_apellido || ''}`.trim(),
+            } : null;
+
+            const pdfInfo = await pdfGenerator.generarAutoInicio(result.expediente, victimaParaPDF, agresorParaPDF, mockUser);
+
+
+            // C. Actualizar Expediente y Registrar Documento
+            await prisma.$transaction([
+                prisma.expediente.update({
+                    where: { id: result.expediente.id },
+                    data: { drive_folder_id: folderId }
+                }),
+                prisma.documento.create({
+                    data: {
+                        id_expediente: result.expediente.id,
+                        nombre: 'Auto de Apertura y Medidas.pdf',
+                        tipo: 'Auto de Inicio',
+                        url_drive: folderId // Podría ser el ID del archivo específico si el service lo da
+                    }
+                })
+            ]);
 
             result.drive_folder_id = folderId;
             result.pdf_url = pdfInfo.fileName;
@@ -117,7 +151,7 @@ const radicarCaso = async (req, res) => {
 
         res.status(201).json({
             success: true,
-            message: 'Expediente radicado artesanalmente con éxito',
+            message: 'Expediente radicado y procesado con éxito',
             data: result
         });
 
@@ -132,3 +166,4 @@ const radicarCaso = async (req, res) => {
 };
 
 module.exports = { radicarCaso };
+
