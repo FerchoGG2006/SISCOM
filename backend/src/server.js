@@ -16,12 +16,20 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+// Servir archivos estáticos (PDFs generados)
+app.use('/documentos', express.static(path.join(__dirname, '../uploads/documentos')));
+
+
 // Init DB on startup
 initDb().catch(err => console.error('DB Init Error:', err));
+
+const searchController = require('./controllers/searchController');
 
 // Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/radicar', radicacionRoutes);
+app.get('/api/v1/search', searchController.searchAll);
+
 
 // Health Check
 app.get('/health', (req, res) => {

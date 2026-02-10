@@ -3,7 +3,9 @@ import { useAuthStore } from './store/authStore';
 import GlobalStyle from './styles/GlobalStyle';
 import { Layout } from './components/layout/Layout';
 import { RadicacionStepper } from './components/features/RadicacionStepper';
+import { GlobalSearch } from './components/common/GlobalSearch';
 import Login from './pages/Login';
+
 import Dashboard from './pages/Dashboard';
 import Expedientes from './pages/Expedientes';
 import ExpedienteDetalle from './pages/ExpedienteDetalle';
@@ -21,7 +23,9 @@ function App() {
         <>
             <GlobalStyle />
             <BrowserRouter>
+                <GlobalSearch />
                 <Routes>
+
                     <Route path="/login" element={<Login />} />
                     <Route path="/" element={
                         <PrivateRoute>

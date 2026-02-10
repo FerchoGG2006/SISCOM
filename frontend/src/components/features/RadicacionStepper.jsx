@@ -176,8 +176,10 @@ export const RadicacionStepper = () => {
             const response = await axios.post('http://localhost:4000/api/v1/radicar', formData);
             setStatus({
                 type: 'success',
-                message: `Caso radicado con éxito. Radicado: ${response.data.data.radicado}`
+                message: `Caso radicado con éxito. Radicado: ${response.data.data.radicado}`,
+                pdfUrl: response.data.data.pdf_url
             });
+
             // Opcional: Redirigir o limpiar
         } catch (error) {
             console.error(error);
@@ -215,9 +217,31 @@ export const RadicacionStepper = () => {
                 >
                     {status && (
                         <StatusMessage type={status.type} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-                            {status.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
-                            {status.message}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+                                {status.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
+                                {status.message}
+                            </div>
+                            {status.pdfUrl && (
+                                <a
+                                    href={`http://localhost:4000/documentos/${status.pdfUrl}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                        background: 'white',
+                                        padding: '0.4rem 0.8rem',
+                                        borderRadius: '8px',
+                                        fontSize: '0.8rem',
+                                        fontWeight: 700,
+                                        color: 'var(--primary)',
+                                        textDecoration: 'none',
+                                        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                    }}
+                                >
+                                    Ver Auto de Inicio
+                                </a>
+                            )}
                         </StatusMessage>
+
                     )}
 
                     <GlassCard>

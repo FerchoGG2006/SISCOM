@@ -107,6 +107,96 @@ class PDFGeneratorService {
     }
 
     /**
+
+     * Genera el Auto de Inicio del proceso (Documento Premium)
+     */
+    async generarAutoInicio(expediente, victima, agresor, usuario) {
+        const fileName = `Auto_Inicio_${expediente.radicado_hs}.pdf`;
+        const filePath = path.join(this.outputDir, fileName);
+
+        return new Promise((resolve, reject) => {
+            try {
+                const doc = new PDFDocument({
+                    size: 'LETTER',
+                    margins: { top: 70, bottom: 50, left: 70, right: 70 }
+                });
+
+                const stream = fs.createWriteStream(filePath);
+                doc.pipe(stream);
+
+                // Diseño premium de encabezado
+                doc.fillColor('#1E293B').fontSize(16).font('Helvetica-Bold')
+                    .text('SISCOM - SISTEMA DE GESTIÓN', { align: 'center' });
+                doc.fontSize(10).font('Helvetica')
+                    .text('COMISARÍA DE FAMILIA - REPÚBLICA DE COLOMBIA', { align: 'center' });
+                doc.moveDown(2);
+
+                doc.fillColor('#000').fontSize(14).font('Helvetica-Bold')
+                    .text('AUTO DE INICIO DE TRÁMITE', { align: 'center' });
+                doc.moveDown(1);
+
+                doc.fontSize(10).font('Helvetica')
+                    .text(`RADICADO: ${expediente.radicado_hs}`, { align: 'right', bold: true })
+                    .text(`FECHA: ${this._formatearFecha(new Date())}`, { align: 'right' });
+                doc.moveDown(2);
+
+                // Cuerpo del documento
+                doc.fontSize(11).font('Helvetica')
+                    .text('VISTO el relato de los hechos presentado por el(la) ciudadano(a) ', { continued: true })
+                    .font('Helvetica-Bold').text(`${victima.nombres} ${victima.apellidos}`, { continued: true })
+                    .font('Helvetica').text(`, identificado(a) con documento No. ${victima.numero_documento}, este despacho procedió a realizar la correspondiente radicación y valoración inicial del caso.`, { align: 'justify' });
+
+                doc.moveDown(1.5);
+
+                doc.font('Helvetica-Bold').text('ANTECEDENTES Y VALORACIÓN:');
+                doc.moveDown(0.5);
+                doc.font('Helvetica').text(`Tras la aplicación del instrumento de valoración de riesgo, se ha determinado de manera preliminar un nivel de riesgo `, { continued: true })
+                    .font('Helvetica-Bold').text(expediente.nivel_riesgo.toUpperCase(), { continued: true })
+                    .font('Helvetica').text(` con un puntaje de ${expediente.puntaje_riesgo} puntos, lo cual exige la activación inmediata de los protocolos institucionales previstos en la Ley 1257 de 2008.`, { align: 'justify' });
+
+                doc.moveDown(1.5);
+
+                doc.font('Helvetica-Bold').text('RESUELVE:');
+                doc.moveDown(0.5);
+                const articulos = [
+                    `PRIMERO: Avocar conocimiento de la presente solicitud de medida de protección en favor de la señora ${victima.nombres} ${victima.apellidos}.`,
+                    `SEGUNDO: Notificar a las partes y vincular al presunto agresor ${agresor ? `${agresor.nombres} ${agresor.apellidos}` : '(Por establecer)'} al proceso.`,
+                    `TERCERO: Activar el seguimiento prioritario por parte del equipo interdisciplinario de la Comisaría de Familia.`,
+                    `CUARTO: Oficiar a la Policía Nacional para las labores de vigilancia preventiva correspondientes.`
+                ];
+
+                articulos.forEach((art, i) => {
+                    doc.font('Helvetica').text(art, { align: 'justify', lineGap: 4 });
+                    doc.moveDown(0.5);
+                });
+
+                // Firma Glass-Style
+                doc.moveDown(4);
+                const startY = doc.y;
+                doc.lineCap('round')
+                    .moveTo(200, startY)
+                    .lineTo(400, startY)
+                    .stroke('#CBD5E1');
+
+                doc.moveDown(1);
+                doc.fontSize(10).font('Helvetica-Bold')
+                    .text(usuario.nombres.toUpperCase(), { align: 'center' })
+                    .font('Helvetica').text('Comisario(a) de Familia', { align: 'center' });
+
+                doc.end();
+
+                stream.on('finish', () => {
+                    resolve({ fileName, filePath });
+                });
+
+                stream.on('error', reject);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    /**
      * Genera el documento de valoración de riesgo
      */
     async generarValoracionRiesgo(expediente, victima, valoracion, usuario) {

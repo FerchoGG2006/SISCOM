@@ -1,6 +1,8 @@
 const prisma = require('../lib/prisma');
 const riskService = require('../services/riskService');
 const driveService = require('../services/driveService');
+const pdfGenerator = require('../services/pdfGenerator.service');
+
 
 const radicarCaso = async (req, res) => {
     try {
@@ -89,16 +91,28 @@ const radicarCaso = async (req, res) => {
             return { expediente, radicado, riskResult };
         });
 
-        // 8. Operación Drive (Fuera de la tx de DB para evitar bloqueos largos)
+        // 8. Operaciones de Salida (Drive + PDF)
         try {
+            // A. Crear Carpeta Drive
             const folderId = await driveService.createCaseFolder(result.radicado, `${victima.nombres} ${victima.apellidos}`);
+
+            // B. Generar PDF Auto de Inicio
+            // Mock de usuario para el PDF (En producción usar req.user)
+            const mockUser = { nombres: 'Comisario', apellidos: 'de Familia', cargo: 'Comisario(a)' };
+            const pdfInfo = await pdfGenerator.generarAutoInicio(result.expediente, victima, agresor, mockUser);
+
             await prisma.expediente.update({
                 where: { id: result.expediente.id },
-                data: { drive_folder_id: folderId }
+                data: {
+                    drive_folder_id: folderId,
+                    // Aquí se podría guardar el path del PDF si la tabla lo permite
+                }
             });
+
             result.drive_folder_id = folderId;
-        } catch (driveErr) {
-            console.error('Error Drive (non-blocking):', driveErr);
+            result.pdf_url = pdfInfo.fileName;
+        } catch (error) {
+            console.error('Error en post-procesamiento (Drive/PDF):', error);
         }
 
         res.status(201).json({
