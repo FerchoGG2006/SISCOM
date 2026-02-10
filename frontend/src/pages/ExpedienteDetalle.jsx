@@ -13,6 +13,8 @@ import {
 } from 'lucide-react'
 import './ExpedienteDetalle.css'
 
+import api from '../services/api'
+
 export default function ExpedienteDetalle() {
     const { id } = useParams()
     const [expediente, setExpediente] = useState(null)
@@ -25,43 +27,44 @@ export default function ExpedienteDetalle() {
 
     const loadExpediente = async () => {
         setLoading(true)
-        // Datos de ejemplo
-        setTimeout(() => {
-            setExpediente({
-                id: 1,
-                radicado: 'HS-2026-00045',
-                tipo_caso: 'violencia_intrafamiliar',
-                estado: 'en_valoracion',
-                nivel_riesgo: 'alto',
-                puntaje_riesgo: 85,
-                fecha_radicacion: '2026-02-04 10:30:00',
-                descripcion_hechos: 'La víctima reporta agresiones físicas y psicológicas constantes por parte de su cónyuge...',
-                carpeta_drive_url: 'https://drive.google.com/...',
-                victima: {
-                    nombre: 'María García López',
-                    documento: 'CC 52.456.789',
-                    edad: 34,
-                    telefono: '300 123 4567',
-                    direccion: 'Calle 45 # 12-34, Barrio Centro'
-                },
-                agresor: {
-                    nombre: 'Juan Pérez Rodríguez',
-                    documento: 'CC 79.123.456',
-                    edad: 38,
-                    parentesco: 'Esposo'
-                },
-                actuaciones: [
-                    { id: 1, tipo: 'radicacion', descripcion: 'Radicación del caso', fecha: '2026-02-04 10:30', usuario: 'Admin Sistema' },
-                    { id: 2, tipo: 'valoracion_riesgo', descripcion: 'Valoración de riesgo completada - Nivel ALTO', fecha: '2026-02-04 11:15', usuario: 'Admin Sistema' },
-                ],
-                documentos: [
-                    { id: 1, tipo: 'formato_recepcion', nombre: 'Formato de Recepción.pdf', fecha: '2026-02-04' },
-                    { id: 2, tipo: 'valoracion_riesgo', nombre: 'Valoración de Riesgo.pdf', fecha: '2026-02-04' },
-                ]
-            })
+        try {
+            const response = await api.get(`/expedientes/${id}`)
+            if (response.data.success) {
+                const data = response.data.data
+                // Map Prisma structure to legacy state structure for compatibility
+                setExpediente({
+                    id: data.id,
+                    radicado: data.radicado_hs,
+                    tipo_caso: 'Violencia Familiar', // Based on logic or data
+                    estado: 'Radicado',
+                    nivel_riesgo: data.nivel_riesgo,
+                    puntaje_riesgo: data.puntaje_riesgo,
+                    fecha_radicacion: new Date(data.fecha_radicacion).toLocaleString(),
+                    descripcion_hechos: data.relato_hechos,
+                    carpeta_drive_url: data.drive_folder_id ? `https://drive.google.com/drive/folders/${data.drive_folder_id}` : null,
+                    victima: {
+                        nombre: `${data.victima.nombres} ${data.victima.apellidos}`,
+                        documento: `${data.victima.tipo_documento} ${data.victima.numero_documento}`,
+                        edad: 'N/A', // Update if ages added
+                        telefono: data.victima.telefono,
+                        direccion: data.victima.direccion
+                    },
+                    agresor: data.agresor ? {
+                        nombre: `${data.agresor.nombres} ${data.agresor.apellidos}`,
+                        documento: `${data.agresor.tipo_documento} ${data.agresor.numero_documento}`,
+                        edad: 'N/A'
+                    } : null,
+                    actuaciones: [], // Need to implement actuaciones in Prisma
+                    documentos: []   // Need to implement documentos in Prisma
+                })
+            }
+        } catch (error) {
+            console.error('Error loading expediente:', error)
+        } finally {
             setLoading(false)
-        }, 500)
+        }
     }
+
 
     if (loading) {
         return <div className="loading">Cargando expediente...</div>

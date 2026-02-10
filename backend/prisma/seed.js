@@ -10,6 +10,23 @@ async function main() {
     await prisma.evaluacionRiesgo.deleteMany({});
     await prisma.expediente.deleteMany({});
     await prisma.persona.deleteMany({});
+    await prisma.usuario.deleteMany({});
+
+    // Crear Usuario Admin
+    console.log('Creando usuario admin...');
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash('Siscom2026!', 10);
+    await prisma.usuario.create({
+        data: {
+            nombres: 'Comisario',
+            apellidos: 'Principal',
+            email: 'comisario@siscom.gov.co',
+            password: hashedPassword,
+            rol: 'comisario',
+            cargo: 'Comisario de Familia'
+        }
+    });
+
 
     // Crear Personas
     console.log('Creando personas...');

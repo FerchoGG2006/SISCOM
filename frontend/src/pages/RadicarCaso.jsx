@@ -97,12 +97,13 @@ export default function RadicarCaso() {
             if (response.data.success) {
                 setSuccess({
                     radicado: response.data.data.radicado,
-                    nivelRiesgo: response.data.data.riesgo.level.toLowerCase(),
-                    puntajeRiesgo: response.data.data.riesgo.score,
-                    expedienteId: response.data.data.expediente_id,
-                    alertas: [] // Backend simpler response vs frontend alerts
+                    nivelRiesgo: response.data.data.riskResult.level.toLowerCase(),
+                    puntajeRiesgo: response.data.data.riskResult.score,
+                    expedienteId: response.data.data.expediente.id,
+                    alertas: []
                 })
             }
+
         } catch (err) {
             console.error('Error radicando:', err)
             setError(err.response?.data?.message || 'Error al radicar el caso')

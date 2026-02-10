@@ -3,7 +3,7 @@
  */
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { query } = require('../config/database');
+const prisma = require('../lib/prisma');
 const logger = require('../config/logger');
 
 class AuthController {
@@ -11,20 +11,17 @@ class AuthController {
         try {
             const { email, password } = req.body;
 
-            // Buscar usuario
-            const users = await query(
-                `SELECT * FROM users WHERE email = ? AND estado = 'activo'`,
-                [email]
-            );
+            // Buscar usuario via Prisma
+            const user = await prisma.usuario.findUnique({
+                where: { email, activo: true }
+            });
 
-            if (users.length === 0) {
+            if (!user) {
                 return res.status(401).json({
                     success: false,
                     message: 'Credenciales inválidas'
                 });
             }
-
-            const user = users[0];
 
             // Verificar contraseña
             const isValid = await bcrypt.compare(password, user.password);
@@ -38,7 +35,7 @@ class AuthController {
             // Generar token
             const token = jwt.sign(
                 { userId: user.id, email: user.email, rol: user.rol },
-                process.env.JWT_SECRET || 'secret_key', // Fallback ifenv missing
+                process.env.JWT_SECRET || 'secret_key',
                 { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
             );
 
@@ -58,7 +55,7 @@ class AuthController {
                     refreshToken,
                     user: {
                         id: user.id,
-                        nombre: user.nombre,
+                        nombre: `${user.nombres} ${user.apellidos}`,
                         email: user.email,
                         rol: user.rol
                     }
@@ -87,19 +84,17 @@ class AuthController {
 
             const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'secret_key');
 
-            const users = await query(
-                `SELECT id, email, rol FROM users WHERE id = ? AND estado = 'activo'`,
-                [decoded.userId]
-            );
+            const user = await prisma.usuario.findUnique({
+                where: { id: decoded.userId, activo: true }
+            });
 
-            if (users.length === 0) {
+            if (!user) {
                 return res.status(401).json({
                     success: false,
                     message: 'Usuario no válido'
                 });
             }
 
-            const user = users[0];
             const newToken = jwt.sign(
                 { userId: user.id, email: user.email, rol: user.rol },
                 process.env.JWT_SECRET || 'secret_key',
@@ -121,3 +116,4 @@ class AuthController {
 }
 
 module.exports = AuthController;
+

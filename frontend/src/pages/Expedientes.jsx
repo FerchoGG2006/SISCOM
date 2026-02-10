@@ -122,13 +122,39 @@ const ActionButton = styled(Link)`
   }
 `;
 
+import api from '../services/api';
+
 export default function Expedientes() {
   const [searchParams] = useSearchParams();
-  const [expedientes, setExpedientes] = useState([
-    { id: 1, radicado: 'HS-2026-00045', victima: 'María García López', agresor: 'Juan Pérez', nivel_riesgo: 'Crítico', fecha: '2026-02-04' },
-    { id: 2, radicado: 'HS-2026-00044', victima: 'Ana Rodríguez M.', agresor: 'Carlos Gómez', nivel_riesgo: 'Moderado', fecha: '2026-02-03' },
-    { id: 3, radicado: 'HS-2026-00043', victima: 'Carmen López', agresor: 'Pedro Martínez', nivel_riesgo: 'Bajo', fecha: '2026-02-02' },
-  ]);
+  const [expedientes, setExpedientes] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExpedientes = async () => {
+      try {
+        const response = await api.get('/expedientes');
+        if (response.data.success) {
+          // Map Prisma data to list view
+          const mapped = response.data.data.map(exp => ({
+            id: exp.id,
+            radicado: exp.radicado_hs,
+            victima: `${exp.victima.nombres} ${exp.victima.apellidos}`,
+            agresor: exp.agresor ? `${exp.agresor.nombres} ${exp.agresor.apellidos}` : 'No definido',
+            nivel_riesgo: exp.nivel_riesgo,
+            fecha: new Date(exp.fecha_radicacion).toLocaleDateString()
+          }));
+          setExpedientes(mapped);
+        }
+      } catch (error) {
+        console.error('Error fetching expedientes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExpedientes();
+  }, []);
+
 
   return (
     <PageContainer>

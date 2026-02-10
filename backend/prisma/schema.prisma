@@ -42,17 +42,24 @@ model Expediente {
   id_agresor       Int?
   fecha_radicacion DateTime @default(now())
   relato_hechos    String?
+  estado           String   @default("Abierto") // 'Abierto', 'En Medidas', 'Cerrado'
   
   // Resultados Riesgo
   puntaje_riesgo   Int      @default(0)
   nivel_riesgo     String   @default("Bajo") // 'Bajo', 'Moderado', 'Crítico'
   
+  // Firmas (Hashes o rutas)
+  firma_victima    String?
+  firma_funcionario String?
+  
   // Google Drive ID
   drive_folder_id  String?
   
-  victima  Persona @relation("Victima", fields: [id_victima], references: [id])
-  agresor  Persona? @relation("Agresor", fields: [id_agresor], references: [id])
-  evaluaciones EvaluacionRiesgo[]
+  victima       Persona @relation("Victima", fields: [id_victima], references: [id])
+  agresor       Persona? @relation("Agresor", fields: [id_agresor], references: [id])
+  evaluaciones  EvaluacionRiesgo[]
+  actuaciones   Actuacion[]
+  documentos    Documento[]
 
   @@map("expedientes")
 }
@@ -62,7 +69,7 @@ model EvaluacionRiesgo {
   id               Int      @id @default(autoincrement())
   id_expediente    Int
   pregunta_numero  Int
-  respuesta        Boolean  @default(false) // false = NO, true = SI
+  respuesta        Boolean  @default(false)
   valor_asignado   Int      @default(0)
   categoria        String?
   
@@ -71,19 +78,51 @@ model EvaluacionRiesgo {
   @@map("evaluaciones_riesgo")
 }
 
-// 4. Tabla de Usuarios (Sistema)
+// 4. Tabla de Actuaciones (Timeline)
+model Actuacion {
+  id               Int      @id @default(autoincrement())
+  id_expediente    Int
+  id_usuario       Int
+  fecha            DateTime @default(now())
+  tipo             String   // 'Radicación', 'Medida de Protección', 'Audiencia', 'Cierre'
+  descripcion      String
+  
+  expediente Expediente @relation(fields: [id_expediente], references: [id])
+  usuario    Usuario    @relation(fields: [id_usuario], references: [id])
+
+  @@map("actuaciones")
+}
+
+// 5. Tabla de Documentos
+model Documento {
+  id               Int      @id @default(autoincrement())
+  id_expediente    Int
+  nombre           String
+  tipo             String   // 'Auto de Inicio', 'Medida', 'Oficio'
+  url_drive        String?
+  generado_el      DateTime @default(now())
+  
+  expediente Expediente @relation(fields: [id_expediente], references: [id])
+
+  @@map("documentos")
+}
+
+// 6. Tabla de Usuarios (Sistema)
 model Usuario {
   id               Int      @id @default(autoincrement())
   nombres          String
   apellidos        String
   email            String   @unique
   password         String
-  rol              String   @default("auxiliar") // 'admin', 'comisario', 'psicologo', etc.
+  rol              String   @default("auxiliar")
   cargo            String?
   activo           Boolean  @default(true)
   ultimo_acceso    DateTime?
   created_at       DateTime @default(now())
+  
+  actuaciones      Actuacion[]
 
   @@map("usuarios")
 }
+
 
