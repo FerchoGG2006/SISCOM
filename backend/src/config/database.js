@@ -20,7 +20,7 @@ async function getDb() {
 
     try {
         dbInstance = await open({
-            filename: path.join(__dirname, '../../database/siscom.db'),
+            filename: path.join(__dirname, '../../database.sqlite'),
             driver: sqlite3.Database
         });
         return dbInstance;

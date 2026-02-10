@@ -30,10 +30,11 @@
     align-items: center;
     gap: var(--spacing-4);
     margin-bottom: var(--spacing-5);
-    padding: var(--spacing-4);
-    background: white;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    /* Glass Container */
+    background: transparent;
+    padding: 0;
+    border: none;
+    box-shadow: none;
 }
 
 .search-box {
@@ -43,9 +44,18 @@
     flex: 1;
     max-width: 400px;
     padding: var(--spacing-3) var(--spacing-4);
-    background: var(--gray-50);
-    border: 1px solid var(--gray-200);
+    /* Glass Input */
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-md);
+    color: var(--text-white);
+    transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .search-box input {
@@ -54,10 +64,11 @@
     background: transparent;
     font-size: var(--font-size-sm);
     outline: none;
+    color: var(--text-white);
 }
 
 .search-box svg {
-    color: var(--gray-400);
+    color: var(--text-dim);
 }
 
 .filters-group {
@@ -65,46 +76,80 @@
     gap: var(--spacing-3);
 }
 
-.filters-group select {
+.filters-group select,
+.filters-group input.date-filter {
     padding: var(--spacing-3) var(--spacing-4);
     font-size: var(--font-size-sm);
-    border: 1px solid var(--gray-200);
+    /* Glass Input */
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
     border-radius: var(--radius-md);
-    background: white;
     min-width: 160px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.filters-group select:hover,
+.filters-group input.date-filter:hover {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-glow);
+}
+
+.filters-group select option {
+    background: var(--bg-dark);
+    color: var(--text-white);
 }
 
 /* Tabla */
 .expedientes-table-wrapper {
-    background: white;
+    /* Glass Container */
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-premium);
     overflow: hidden;
+    padding: 32px;
 }
 
 .expedientes-table {
     width: 100%;
-    border-collapse: collapse;
-}
-
-.expedientes-table th,
-.expedientes-table td {
-    padding: var(--spacing-4);
-    text-align: left;
-    border-bottom: 1px solid var(--gray-100);
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .expedientes-table th {
-    font-size: var(--font-size-xs);
-    font-weight: 600;
-    color: var(--gray-500);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-dim);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    background: var(--gray-50);
+    padding: 16px 24px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--border-glass);
+    text-align: left;
+}
+
+.expedientes-table td {
+    padding: 24px;
+    color: var(--text-white);
+    border-bottom: 1px solid var(--border-glass);
+    font-weight: 500;
+}
+
+.expedientes-table tbody tr {
+    transition: background 0.2s;
+}
+
+.expedientes-table tbody tr:nth-child(even) {
+    background: rgba(255, 255, 255, 0.02);
 }
 
 .expedientes-table tbody tr:hover {
-    background: rgba(59, 130, 246, 0.02);
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .radicado-link {
@@ -159,13 +204,16 @@
     align-items: center;
     margin-top: var(--spacing-5);
     padding: var(--spacing-4);
-    background: white;
+    /* Glass Container */
+    background: var(--bg-card);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
 }
 
 .pagination-info {
     font-size: var(--font-size-sm);
-    color: var(--gray-500);
+    color: var(--text-dim);
 }
 
 .pagination-controls {
@@ -176,7 +224,7 @@
 
 .page-number {
     font-weight: 600;
-    color: var(--gray-700);
+    color: var(--text-white);
     padding: 0 var(--spacing-2);
 }
 

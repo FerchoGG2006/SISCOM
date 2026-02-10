@@ -78,9 +78,33 @@ export default function RadicarCaso() {
         setError('')
 
         try {
-            const response = await api.post('/expedientes/radicar', formData)
-            setSuccess(response.data.data)
+            // Transform answers object to ordered array for backend
+            const riskAnswers = Array.from({ length: 52 }, (_, i) => {
+                const key = `item_${String(i + 1).padStart(2, '0')}`
+                return formData.valoracionRiesgo[key] || false
+            })
+
+            const payload = {
+                victima: formData.victima,
+                agresor: formData.agresor,
+                respuestas_riesgo: riskAnswers,
+                usuario_id: 1 // Default user for MVP
+            }
+
+            // Post to new endpoint (client baseURL includes /api/v1)
+            const response = await api.post('/radicar', payload)
+
+            if (response.data.success) {
+                setSuccess({
+                    radicado: response.data.data.radicado,
+                    nivelRiesgo: response.data.data.riesgo.level.toLowerCase(),
+                    puntajeRiesgo: response.data.data.riesgo.score,
+                    expedienteId: response.data.data.expediente_id,
+                    alertas: [] // Backend simpler response vs frontend alerts
+                })
+            }
         } catch (err) {
+            console.error('Error radicando:', err)
             setError(err.response?.data?.message || 'Error al radicar el caso')
         } finally {
             setLoading(false)

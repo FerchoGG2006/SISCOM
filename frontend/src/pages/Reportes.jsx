@@ -199,6 +199,7 @@ export default function Reportes() {
                                         className="tipo-bar"
                                         style={{ width: `${(cantidad / Math.max(...Object.values(stats.porTipo))) * 100}%` }}
                                     ></div>
+                                    <span className="bar-value-label">{Math.round((cantidad / stats.totalCasos) * 100)}%</span>
                                 </div>
                                 <span className="tipo-value">{cantidad}</span>
                             </div>

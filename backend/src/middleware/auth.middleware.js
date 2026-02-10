@@ -17,15 +17,15 @@ const authMiddleware = async (req, res, next) => {
 
         const token = authHeader.split(' ')[1];
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret_key');
 
         // Verificar que el usuario existe y está activo
         const users = await query(
-            `SELECT id, cedula, nombres, apellidos, email, rol, cargo, activo FROM usuarios WHERE id = ?`,
+            `SELECT id, nombre, email, rol, estado FROM users WHERE id = ?`,
             [decoded.userId]
         );
 
-        if (users.length === 0 || !users[0].activo) {
+        if (users.length === 0 || users[0].estado !== 'activo') {
             return res.status(401).json({
                 success: false,
                 message: 'Usuario no válido o inactivo'

@@ -13,7 +13,7 @@ class AuthController {
 
             // Buscar usuario
             const users = await query(
-                `SELECT * FROM usuarios WHERE email = ? AND activo = 1`,
+                `SELECT * FROM users WHERE email = ? AND estado = 'activo'`,
                 [email]
             );
 
@@ -27,7 +27,7 @@ class AuthController {
             const user = users[0];
 
             // Verificar contraseña
-            const isValid = await bcrypt.compare(password, user.password_hash);
+            const isValid = await bcrypt.compare(password, user.password);
             if (!isValid) {
                 return res.status(401).json({
                     success: false,
@@ -35,22 +35,16 @@ class AuthController {
                 });
             }
 
-            // Actualizar último acceso
-            await query(
-                `UPDATE usuarios SET ultimo_acceso = NOW() WHERE id = ?`,
-                [user.id]
-            );
-
             // Generar token
             const token = jwt.sign(
                 { userId: user.id, email: user.email, rol: user.rol },
-                process.env.JWT_SECRET,
+                process.env.JWT_SECRET || 'secret_key', // Fallback ifenv missing
                 { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
             );
 
             const refreshToken = jwt.sign(
                 { userId: user.id },
-                process.env.JWT_SECRET,
+                process.env.JWT_SECRET || 'secret_key',
                 { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
             );
 
@@ -64,11 +58,9 @@ class AuthController {
                     refreshToken,
                     user: {
                         id: user.id,
-                        nombres: user.nombres,
-                        apellidos: user.apellidos,
+                        nombre: user.nombre,
                         email: user.email,
-                        rol: user.rol,
-                        cargo: user.cargo
+                        rol: user.rol
                     }
                 }
             });
@@ -93,10 +85,10 @@ class AuthController {
                 });
             }
 
-            const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+            const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'secret_key');
 
             const users = await query(
-                `SELECT id, email, rol FROM usuarios WHERE id = ? AND activo = 1`,
+                `SELECT id, email, rol FROM users WHERE id = ? AND estado = 'activo'`,
                 [decoded.userId]
             );
 
@@ -110,7 +102,7 @@ class AuthController {
             const user = users[0];
             const newToken = jwt.sign(
                 { userId: user.id, email: user.email, rol: user.rol },
-                process.env.JWT_SECRET,
+                process.env.JWT_SECRET || 'secret_key',
                 { expiresIn: process.env.JWT_EXPIRES_IN || '8h' }
             );
 

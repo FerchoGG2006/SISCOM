@@ -40,36 +40,46 @@
     align-items: center;
     gap: var(--spacing-3);
     padding: var(--spacing-4);
-    border: none;
-    background: white;
+    border: 1px solid transparent;
+    /* Glass Tab */
+    background: transparent;
     border-radius: var(--radius-md);
     cursor: pointer;
     font-size: var(--font-size-sm);
-    color: var(--gray-600);
-    transition: all var(--transition-fast);
+    color: var(--text-dim);
+    transition: all 0.2s ease;
     text-align: left;
 }
 
 .config-tab:hover {
-    background: var(--gray-50);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-white);
 }
 
 .config-tab.active {
-    background: var(--primary-50);
-    color: var(--primary-600);
-    font-weight: 500;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary-color);
+    border-color: var(--primary-glow);
+    font-weight: 600;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.1);
 }
 
 .config-content {
-    background: white;
+    /* Glass Card */
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
     padding: var(--spacing-6);
+    box-shadow: var(--shadow-premium);
 }
 
 .config-section h2 {
     font-size: var(--font-size-lg);
     margin-bottom: var(--spacing-5);
-    color: var(--gray-800);
+    color: var(--text-white);
+    border-bottom: 1px solid var(--border-glass);
+    padding-bottom: var(--spacing-3);
 }
 
 .form-grid {
@@ -89,9 +99,17 @@
     justify-content: space-between;
     align-items: center;
     padding: var(--spacing-4);
-    background: var(--gray-50);
+    /* Glass Item */
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass);
     border-radius: var(--radius-md);
     cursor: pointer;
+    color: var(--text-white);
+    transition: background 0.2s;
+}
+
+.toggle-item:hover {
+    background: rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 768px) {

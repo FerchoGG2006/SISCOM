@@ -33,9 +33,9 @@
     display: flex;
     gap: var(--spacing-4);
     margin-bottom: var(--spacing-6);
-    padding: var(--spacing-4);
-    background: white;
-    border-radius: var(--radius-lg);
+    padding: 0;
+    /* Glass Container */
+    background: transparent;
     flex-wrap: wrap;
 }
 
@@ -47,15 +47,25 @@
 
 .filter-group label {
     font-size: var(--font-size-sm);
-    color: var(--gray-600);
+    color: var(--text-dim);
 }
 
 .filter-group select,
 .filter-group input {
     padding: var(--spacing-2) var(--spacing-3);
-    border: 1px solid var(--gray-200);
+    /* Glass Input */
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+}
+
+.filter-group select:hover,
+.filter-group input:hover {
+    background: rgba(15, 23, 42, 0.8);
+    border-color: var(--primary-color);
 }
 
 /* Stats Cards */
@@ -67,13 +77,23 @@
 }
 
 .stat-card {
-    background: white;
+    /* Glass Card */
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-5);
+    padding: 24px;
     display: flex;
     align-items: center;
     gap: var(--spacing-4);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-premium);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .stat-icon {
@@ -110,12 +130,12 @@
 .stat-value {
     font-size: var(--font-size-2xl);
     font-weight: 700;
-    color: var(--gray-800);
+    color: var(--text-white);
 }
 
 .stat-label {
     font-size: var(--font-size-sm);
-    color: var(--gray-500);
+    color: var(--text-dim);
 }
 
 /* Charts Grid */
@@ -127,10 +147,13 @@
 }
 
 .chart-card {
-    background: white;
+    /* Glass Card */
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
-    padding: var(--spacing-5);
-    box-shadow: var(--shadow-sm);
+    padding: 24px;
+    box-shadow: var(--shadow-premium);
 }
 
 .chart-card.wide {
@@ -143,7 +166,7 @@
     gap: var(--spacing-2);
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-5);
-    color: var(--gray-700);
+    color: var(--text-white);
 }
 
 /* Risk Distribution */
@@ -265,9 +288,10 @@
 
 .estado-item {
     padding: var(--spacing-4);
-    background: var(--gray-50);
+    background: rgba(255, 255, 255, 0.05);
     border-radius: var(--radius-md);
     text-align: center;
+    border: 1px solid var(--border-glass);
 }
 
 .estado-cantidad {
@@ -288,8 +312,16 @@
     display: flex;
     justify-content: space-around;
     align-items: flex-end;
-    height: 200px;
+    height: 250px;
+    /* Increased height */
     padding-top: var(--spacing-4);
+    border-left: 2px solid var(--border-glass);
+    /* Y-axis */
+    border-bottom: 2px solid var(--border-glass);
+    /* X-axis */
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100% 50px;
+    /* Grid lines */
 }
 
 .trend-bar-wrapper {
@@ -297,15 +329,20 @@
     flex-direction: column;
     align-items: center;
     width: 50px;
+    position: relative;
+    /* Context for absolute value */
 }
 
 .trend-bar {
-    width: 40px;
-    background: linear-gradient(180deg, var(--primary-500), var(--primary-400));
+    width: 100%;
+    /* Adjust to fill wrapper */
+    background: linear-gradient(to top, var(--primary-color), var(--secondary-color));
     border-radius: var(--radius-md) var(--radius-md) 0 0;
     position: relative;
-    min-height: 20px;
+    min-height: 4px;
+    /* Ensure visibility */
     transition: height 0.5s ease;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
 }
 
 .trend-value {
@@ -315,49 +352,56 @@
     transform: translateX(-50%);
     font-size: var(--font-size-sm);
     font-weight: 600;
-    color: var(--gray-700);
+    color: var(--text-white);
 }
 
 .trend-label {
     margin-top: var(--spacing-2);
     font-size: var(--font-size-sm);
-    color: var(--gray-500);
+    color: var(--text-dim);
 }
 
 /* Summary Table */
 .summary-table-section {
-    background: white;
+    /* Glass Card */
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
     border-radius: var(--radius-lg);
     padding: var(--spacing-5);
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow-premium);
 }
 
 .summary-table-section h3 {
     font-size: var(--font-size-base);
     margin-bottom: var(--spacing-4);
+    color: var(--text-white);
 }
 
 .summary-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
 }
 
 .summary-table th,
 .summary-table td {
     padding: var(--spacing-3) var(--spacing-4);
     text-align: left;
-    border-bottom: 1px solid var(--gray-100);
+    border-bottom: 1px solid var(--border-glass);
 }
 
 .summary-table th {
     font-size: var(--font-size-xs);
     font-weight: 600;
-    color: var(--gray-500);
+    color: var(--text-dim);
     text-transform: uppercase;
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .summary-table td {
     font-size: var(--font-size-sm);
+    color: var(--text-white);
 }
 
 .percent-high {

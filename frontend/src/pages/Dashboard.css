@@ -31,23 +31,58 @@
 
 .stat-card {
     position: relative;
-    padding: var(--space-md);
+    padding: 24px;
     display: flex;
     align-items: center;
     gap: 20px;
     overflow: hidden;
+    /* Glassmorphism / KPI Card Style */
+    background: var(--bg-card);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border-glass);
+    border-top: 1px solid var(--glass-highlight);
+    border-radius: var(--radius-lg);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    box-shadow: var(--shadow-premium), var(--inner-glow);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Shimmer Effect */
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transform: skewX(-25deg);
+    transition: 0.5s;
+    pointer-events: none;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+    transition: 0.7s;
 }
 
 .stat-card::after {
     content: '';
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 60px;
-    height: 60px;
+    top: -50px;
+    right: -50px;
+    width: 100px;
+    height: 100px;
     background: radial-gradient(circle, var(--accent-color) 0%, transparent 70%);
-    opacity: 0.1;
-    transform: translate(20px, -20px);
+    opacity: 0.15;
+    filter: blur(20px);
+    pointer-events: none;
 }
 
 .stat-icon {
@@ -57,8 +92,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-glass);
+    background: rgba(255, 255, 255, 0.1);
+    /* Increased opacity for better contrast */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Lighter border */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card.primary {
@@ -99,9 +137,13 @@
 
 .stat-value {
     display: block;
-    font-size: 1.75rem;
+    font-size: 2rem;
+    /* Slightly larger */
     font-weight: 800;
-    color: var(--text-white);
+    /* Bold as requested */
+    color: #ffffff;
+    /* Pure white for max contrast */
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     line-height: 1;
     margin-bottom: 4px;
 }
@@ -122,6 +164,20 @@
     background: rgba(16, 185, 129, 0.1);
     padding: 2px 8px;
     border-radius: 6px;
+}
+
+/* Vibrancy for Badge and Stat icons */
+.stat-card.danger .stat-icon {
+    color: #ff4d4d;
+    /* Brighter Red */
+    background: rgba(255, 77, 77, 0.15);
+    border-color: rgba(255, 77, 77, 0.3);
+}
+
+.stat-card.warning .stat-icon {
+    color: #fbbf24;
+    /* Brighter Amber */
+    background: rgba(251, 191, 36, 0.15);
 }
 
 /* Dashboard Grid */
@@ -171,10 +227,59 @@
     border-bottom: 1px solid var(--border-glass);
 }
 
+.estado-badge {
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-glass);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* CSS Cleaned up */
+
+/* Updated Risk Colors - Brighter/Aggressive */
+.badge-risk.alto {
+    background-color: #ffa500;
+    /* Orange */
+    color: white;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 2px 5px rgba(255, 165, 0, 0.3);
+}
+
+.badge-risk.extremo {
+    background-color: #ff4d4d;
+    /* Red */
+    color: white;
+    font-weight: bold;
+    border: none;
+    box-shadow: 0 2px 5px rgba(255, 77, 77, 0.3);
+}
+
+.badge-risk.medio {
+    background-color: #ffd700;
+    /* Yellow */
+    color: #1e1b4b;
+    /* Dark text for contrast */
+    font-weight: bold;
+    border: none;
+}
+
+.badge-risk.bajo {
+    background-color: #4ade80;
+    /* Green */
+    color: #064e3b;
+    font-weight: bold;
+    border: none;
+}
+
 .cases-table td {
-    padding: 16px;
+    padding: 24px 16px;
+    /* Increased vertical padding */
     color: var(--text-main);
     border-bottom: 1px solid var(--border-glass);
+    vertical-align: middle;
 }
 
 .cases-table tr:last-child td {
@@ -213,10 +318,9 @@
     gap: 16px;
     padding: 16px;
     border-radius: var(--radius-md);
-    border: 1px solid var(--border-glass);
-    background: rgba(255, 255, 255, 0.03);
-    transition: all 0.2s ease;
     text-decoration: none;
+    /* Stronger border */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .action-item:hover {

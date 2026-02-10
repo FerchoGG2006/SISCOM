@@ -16,11 +16,16 @@
     height: 100vh;
     z-index: 100;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Sidebar Spotlight */
+    background-image: radial-gradient(circle at top left, rgba(99, 102, 241, 0.08), transparent 40%);
 }
 
 .sidebar-header {
     padding: var(--space-lg);
     border-bottom: 1px solid var(--border-glass);
+    position: relative;
+    /* Ensure spotlight works */
+    z-index: 2;
 }
 
 .logo {
@@ -36,23 +41,26 @@
     padding: 8px;
     background: rgba(62, 82, 255, 0.1);
     border-radius: 12px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    /* Subtle border */
 }
 
 .logo-text {
     font-size: 1.5rem;
     font-weight: 800;
-    letter-spacing: 1px;
-    background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.02em;
+    /* Tighter tracking */
+    color: var(--text-white);
 }
 
 .logo-subtitle {
     font-size: 0.7rem;
     color: var(--text-dim);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.1em;
+    /* Wide tracking for micro-labels */
     margin-top: 2px;
+    font-weight: 600;
 }
 
 .sidebar-nav {
@@ -60,7 +68,8 @@
     padding: var(--space-md);
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
+    /* Increased gap */
     overflow-y: auto;
 }
 
@@ -74,24 +83,27 @@
     transition: all 0.2s ease;
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    border: 1px solid transparent;
+    /* Reserve space for border */
 }
 
 .nav-item:hover {
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-white);
     transform: translateX(4px);
+    border-color: rgba(255, 255, 255, 0.05);
 }
 
 .nav-item.active {
-    background: linear-gradient(135deg, rgba(62, 82, 255, 0.2), rgba(140, 82, 255, 0.1));
-    color: var(--text-white);
-    border: 1px solid rgba(62, 82, 255, 0.3);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    font-weight: 600;
 }
 
 .nav-item.active .nav-icon {
-    color: var(--primary-color);
+    color: white;
 }
 
 .sidebar-footer {

@@ -105,6 +105,20 @@ export default function Expedientes() {
                 </div>
 
                 <div className="filters-group">
+                    <input
+                        type="date"
+                        name="fechaInicio"
+                        className="date-filter"
+                        placeholder="Desde"
+                        title="Fecha Inicio"
+                    />
+                    <input
+                        type="date"
+                        name="fechaFin"
+                        className="date-filter"
+                        placeholder="Hasta"
+                        title="Fecha Fin"
+                    />
                     <select
                         name="estado"
                         value={filters.estado}
@@ -175,6 +189,7 @@ export default function Expedientes() {
                                     <Link
                                         to={`/expedientes/${exp.id}`}
                                         className="btn btn-sm btn-secondary"
+                                        title="Ver Detalles del Expediente" // Tooltip added
                                     >
                                         <Eye size={16} />
                                     </Link>

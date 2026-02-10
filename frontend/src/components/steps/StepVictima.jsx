@@ -40,7 +40,7 @@ export default function StepVictima({ data, onUpdate }) {
 
     return (
         <div className="step-victima">
-            <div className="form-section">
+            <div className="form-section form-section-card">
                 <h3 className="form-section-title">
                     <User size={20} />
                     Datos de Identificación
@@ -169,7 +169,7 @@ export default function StepVictima({ data, onUpdate }) {
                 </div>
             </div>
 
-            <div className="form-section">
+            <div className="form-section form-section-card">
                 <h3 className="form-section-title">Datos de Contacto</h3>
 
                 <div className="form-row">
@@ -249,7 +249,7 @@ export default function StepVictima({ data, onUpdate }) {
                 </div>
             </div>
 
-            <div className="form-section">
+            <div className="form-section form-section-card">
                 <h3 className="form-section-title">Datos Socioeconómicos</h3>
 
                 <div className="form-row">

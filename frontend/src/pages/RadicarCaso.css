@@ -17,6 +17,81 @@
     color: var(--text-dim);
 }
 
+/* Stepper */
+.stepper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+    position: relative;
+    padding: 0 10px;
+}
+
+.stepper::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    right: 40px;
+    height: 2px;
+    background: var(--border-glass);
+    z-index: 0;
+}
+
+.stepper-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.stepper-step.active,
+.stepper-step.completed {
+    opacity: 1;
+}
+
+.stepper-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    /* Glass Circle */
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px solid var(--border-glass);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.stepper-step.active .stepper-circle {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    box-shadow: 0 0 15px var(--primary-glow);
+    background: var(--bg-dark);
+}
+
+.stepper-step.completed .stepper-circle {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.stepper-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dim);
+}
+
+.stepper-step.active .stepper-label {
+    color: var(--primary-color);
+}
+
+
 /* Step Content */
 .step-content {
     min-height: 400px;
@@ -162,10 +237,61 @@
     font-family: var(--font-accent);
 }
 
+/* Added Grouping Card Style */
+.form-section-card {
+    background: var(--bg-card);
+    /* Glass */
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow-premium);
+}
+
 .form-row {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    max-width: 500px;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    /* Glass Input */
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    outline: none;
+    background: rgba(15, 23, 42, 0.8);
+}
+
+/* Validation */
+.form-group input.is-invalid,
+.form-group select.is-invalid,
+.form-group textarea.is-invalid {
+    border-color: var(--danger);
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.invalid-feedback {
+    color: var(--danger);
+    font-size: 0.75rem;
+    margin-top: 4px;
+    display: block;
 }
 
 .form-row.two-cols {

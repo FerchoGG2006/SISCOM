@@ -22,6 +22,7 @@ export default function Dashboard() {
     })
     const [recentCases, setRecentCases] = useState([])
     const [loading, setLoading] = useState(true)
+    const [filterRisk, setFilterRisk] = useState(null) // New filter state
 
     useEffect(() => {
         loadDashboardData()
@@ -42,6 +43,7 @@ export default function Dashboard() {
                 { id: 2, radicado: 'HS-2026-00044', victima: 'Ana Rodríguez', estado: 'medidas_proteccion', riesgo: 'extremo' },
                 { id: 3, radicado: 'HS-2026-00043', victima: 'Carmen López', estado: 'seguimiento', riesgo: 'medio' },
                 { id: 4, radicado: 'HS-2026-00042', victima: 'Lucía Martínez', estado: 'radicado', riesgo: 'bajo' },
+                { id: 5, radicado: 'HS-2026-00041', victima: 'Sofía Vergara', estado: 'audiencia_programada', riesgo: 'alto' },
             ])
         } catch (error) {
             console.error('Error loading dashboard:', error)
@@ -56,26 +58,30 @@ export default function Dashboard() {
             label: 'Total Expedientes',
             value: stats.totalExpedientes,
             color: 'primary',
-            trend: '+12%'
+            trend: '+12%',
+            filter: null // Reset filter
         },
         {
             icon: AlertTriangle,
             label: 'Riesgo Alto/Extremo',
             value: stats.casosAltoRiesgo,
             color: 'danger',
-            urgent: true
+            urgent: true,
+            filter: ['alto', 'extremo'] // Filter by high risk
         },
         {
             icon: Clock,
             label: 'Pendientes',
             value: stats.casosPendientes,
-            color: 'warning'
+            color: 'warning',
+            filter: 'pendiente' // Placeholder logic (requires data support)
         },
         {
             icon: TrendingUp,
             label: 'Casos Hoy',
             value: stats.casosHoy,
-            color: 'success'
+            color: 'success',
+            filter: 'hoy'
         },
     ]
 
@@ -88,10 +94,20 @@ export default function Dashboard() {
             'radicado': 'Radicado',
             'en_valoracion': 'En Valoración',
             'medidas_proteccion': 'Med. Protección',
-            'seguimiento': 'Seguimiento'
+            'seguimiento': 'Seguimiento',
+            'audiencia_programada': 'Audiencia'
         }
         return labels[estado] || estado
     }
+
+    // Filter logic
+    const filteredCases = recentCases.filter(caso => {
+        if (!filterRisk) return true;
+        if (Array.isArray(filterRisk)) return filterRisk.includes(caso.riesgo);
+        if (filterRisk === 'hoy') return true; // Date logic needed
+        if (filterRisk === 'pendiente') return ['radicado', 'en_valoracion'].includes(caso.estado);
+        return true;
+    })
 
     return (
         <div className="dashboard">
@@ -108,8 +124,13 @@ export default function Dashboard() {
 
             {/* Stats Grid */}
             <div className="stats-grid">
-                {statCards.map(({ icon: Icon, label, value, color, trend, urgent }) => (
-                    <div key={label} className={`stat-card glass-card ${color} ${urgent ? 'urgent' : ''}`}>
+                {statCards.map(({ icon: Icon, label, value, color, trend, urgent, filter }) => (
+                    <div
+                        key={label}
+                        className={`stat-card glass-card ${color} ${urgent ? 'urgent' : ''}`}
+                        onClick={() => setFilterRisk(filter)}
+                        title="Click para filtrar"
+                    >
                         <div className="stat-icon">
                             <Icon size={24} />
                         </div>
@@ -127,7 +148,10 @@ export default function Dashboard() {
                 {/* Recent Cases */}
                 <div className="card glass-card recent-cases">
                     <div className="card-header">
-                        <h3>Casos Recientes</h3>
+                        <h3>
+                            Casos Recientes
+                            {filterRisk && <span style={{ fontSize: '0.8rem', color: 'var(--primary-color)', marginLeft: '10px' }}>(Filtrado)</span>}
+                        </h3>
                         <Link to="/expedientes" className="view-all">
                             Ver todos <ArrowRight size={16} />
                         </Link>
@@ -143,7 +167,7 @@ export default function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {recentCases.map(caso => (
+                                {filteredCases.map(caso => (
                                     <tr key={caso.id}>
                                         <td>
                                             <Link to={`/expedientes/${caso.id}`} className="radicado-link">
@@ -156,7 +180,7 @@ export default function Dashboard() {
                                         </td>
                                         <td>
                                             <span className={`badge-risk ${caso.riesgo}`}>
-                                                {caso.riesgo}
+                                                {caso.riesgo.toUpperCase()}
                                             </span>
                                         </td>
                                     </tr>
