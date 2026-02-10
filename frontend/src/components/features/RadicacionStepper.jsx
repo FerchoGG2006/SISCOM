@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GlassCard, StyledInput, StyledLabel } from '../common/GlassCard';
-import { User, ShieldAlert, FileText, CheckCircle2 } from 'lucide-react';
+import { User, ShieldAlert, FileText, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 
 const StepperContainer = styled.div`
   max-width: 800px;
@@ -72,14 +73,21 @@ const Button = styled(motion.button)`
   font-weight: 600;
   cursor: pointer;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   
   ${props => props.primary ? `
     background: var(--primary);
     color: white;
     border: none;
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-    &:hover {
+    &:hover:not(:disabled) {
       background: var(--primary-dark);
+    }
+    &:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
     }
   ` : `
     background: white;
@@ -92,6 +100,25 @@ const Button = styled(motion.button)`
   `}
 `;
 
+const StatusMessage = styled(motion.div)`
+  padding: 1rem;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  ${props => props.type === 'error' ? `
+    background: #FEF2F2;
+    color: #991B1B;
+    border: 1px solid #FEE2E2;
+  ` : `
+    background: #F0FDF4;
+    color: #166534;
+    border: 1px solid #DCFCE7;
+  `}
+`;
+
 const steps = [
     { icon: <User size={20} />, label: 'Víctima' },
     { icon: <ShieldAlert size={20} />, label: 'Agresor' },
@@ -101,9 +128,67 @@ const steps = [
 
 export const RadicacionStepper = () => {
     const [currentStep, setCurrentStep] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [status, setStatus] = useState(null); // { type: 'success' | 'error', message: string }
+
+    const [formData, setFormData] = useState({
+        victima: {
+            nombres: '',
+            apellidos: '',
+            tipo_documento: 'CC',
+            numero_documento: '',
+            telefono: '',
+            direccion: ''
+        },
+        agresor: {
+            nombres: '',
+            apellidos: '',
+            tipo_documento: 'CC',
+            numero_documento: '',
+        },
+        relato_hechos: '',
+        respuestas_riesgo: new Array(52).fill(false)
+    });
 
     const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length - 1));
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 0));
+
+    const handleVictimaChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            victima: { ...prev.victima, [name]: value }
+        }));
+    };
+
+    const handleAgresorChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            agresor: { ...prev.agresor, [name]: value }
+        }));
+    };
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        setStatus(null);
+        try {
+            const response = await axios.post('http://localhost:4000/api/v1/radicar', formData);
+            setStatus({
+                type: 'success',
+                message: `Caso radicado con éxito. Radicado: ${response.data.data.radicado}`
+            });
+            // Opcional: Redirigir o limpiar
+        } catch (error) {
+            console.error(error);
+            setStatus({
+                type: 'error',
+                message: error.response?.data?.message || 'Error al conectar con el servidor robusto.'
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <StepperContainer>
@@ -128,6 +213,13 @@ export const RadicacionStepper = () => {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
                 >
+                    {status && (
+                        <StatusMessage type={status.type} initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+                            {status.type === 'error' ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
+                            {status.message}
+                        </StatusMessage>
+                    )}
+
                     <GlassCard>
                         <h2 style={{ marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 700 }}>
                             {steps[currentStep].label} del Expediente
@@ -137,19 +229,39 @@ export const RadicacionStepper = () => {
                             <FormGrid>
                                 <div>
                                     <StyledLabel>Nombres</StyledLabel>
-                                    <StyledInput placeholder="Ej: María Elena" />
+                                    <StyledInput
+                                        name="nombres"
+                                        value={formData.victima.nombres}
+                                        onChange={handleVictimaChange}
+                                        placeholder="Ej: María Elena"
+                                    />
                                 </div>
                                 <div>
                                     <StyledLabel>Apellidos</StyledLabel>
-                                    <StyledInput placeholder="Ej: Gómez Pérez" />
+                                    <StyledInput
+                                        name="apellidos"
+                                        value={formData.victima.apellidos}
+                                        onChange={handleVictimaChange}
+                                        placeholder="Ej: Gómez Pérez"
+                                    />
                                 </div>
                                 <div>
                                     <StyledLabel>Tipo Documento</StyledLabel>
-                                    <StyledInput placeholder="CC, TI, etc." />
+                                    <StyledInput
+                                        name="tipo_documento"
+                                        value={formData.victima.tipo_documento}
+                                        onChange={handleVictimaChange}
+                                        placeholder="CC, TI, etc."
+                                    />
                                 </div>
                                 <div>
                                     <StyledLabel>Número Documento</StyledLabel>
-                                    <StyledInput placeholder="123456789" />
+                                    <StyledInput
+                                        name="numero_documento"
+                                        value={formData.victima.numero_documento}
+                                        onChange={handleVictimaChange}
+                                        placeholder="123456789"
+                                    />
                                 </div>
                             </FormGrid>
                         )}
@@ -157,12 +269,22 @@ export const RadicacionStepper = () => {
                         {currentStep === 1 && (
                             <FormGrid>
                                 <div style={{ gridColumn: 'span 2' }}>
-                                    <StyledLabel>Nombre Completo del Agresor</StyledLabel>
-                                    <StyledInput placeholder="Nombre completo" />
+                                    <StyledLabel>Nombres y Apellidos del Agresor</StyledLabel>
+                                    <StyledInput
+                                        name="nombres"
+                                        value={formData.agresor.nombres}
+                                        onChange={handleAgresorChange}
+                                        placeholder="Nombre completo"
+                                    />
                                 </div>
                                 <div>
-                                    <StyledLabel>Parentesco</StyledLabel>
-                                    <StyledInput placeholder="Cónyuge, Padre, etc." />
+                                    <StyledLabel>Número Documento (Si lo conoce)</StyledLabel>
+                                    <StyledInput
+                                        name="numero_documento"
+                                        value={formData.agresor.numero_documento}
+                                        onChange={handleAgresorChange}
+                                        placeholder="CC123..."
+                                    />
                                 </div>
                             </FormGrid>
                         )}
@@ -182,6 +304,8 @@ export const RadicacionStepper = () => {
                                         outline: 'none',
                                         resize: 'vertical'
                                     }}
+                                    value={formData.relato_hechos}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, relato_hechos: e.target.value }))}
                                     placeholder="Describa detalladamente los acontecimientos..."
                                 />
                             </div>
@@ -191,22 +315,29 @@ export const RadicacionStepper = () => {
                             <div style={{ textAlign: 'center', padding: '2rem' }}>
                                 <CheckCircle2 size={64} color="var(--primary)" style={{ marginBottom: '1rem' }} />
                                 <h3>¡Todo Listo para Radicar!</h3>
-                                <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                                <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
                                     Verifique la información antes de enviar el expediente al sistema.
                                 </p>
+                                <div style={{ textAlign: 'left', background: 'rgba(0,0,0,0.02)', padding: '1rem', borderRadius: '12px' }}>
+                                    <strong>Víctima:</strong> {formData.victima.nombres} {formData.victima.apellidos}<br />
+                                    <strong>Documento:</strong> {formData.victima.numero_documento}<br />
+                                    <strong>Agresor:</strong> {formData.agresor.nombres || 'No especificado'}
+                                </div>
                             </div>
                         )}
 
                         <ButtonGroup>
-                            <Button onClick={prevStep} disabled={currentStep === 0}>
+                            <Button onClick={prevStep} disabled={currentStep === 0 || loading}>
                                 Anterior
                             </Button>
                             <Button
                                 primary
-                                onClick={currentStep === steps.length - 1 ? () => alert('Expediente Radicado') : nextStep}
+                                disabled={loading}
+                                onClick={currentStep === steps.length - 1 ? handleSubmit : nextStep}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                {currentStep === steps.length - 1 ? 'Radicar Expediente' : 'Siguiente'}
+                                {loading && <Loader2 size={18} className="animate-spin" />}
+                                {currentStep === steps.length - 1 ? (loading ? 'Radicando...' : 'Radicar Expediente') : 'Siguiente'}
                             </Button>
                         </ButtonGroup>
                     </GlassCard>

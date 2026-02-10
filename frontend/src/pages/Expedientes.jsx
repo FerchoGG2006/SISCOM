@@ -1,228 +1,211 @@
-import { useState, useEffect } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
-import api from '../services/api'
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { motion } from 'framer-motion';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
     Search,
     Filter,
     FileText,
     Eye,
     ChevronLeft,
-    ChevronRight
-} from 'lucide-react'
-import './Expedientes.css'
+    ChevronRight,
+    PlusCircle
+} from 'lucide-react';
+import { GlassCard, StyledInput } from '../components/common/GlassCard';
+
+const PageContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+`;
+
+const PageHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const FilterBar = styled(GlassCard)`
+  padding: 1rem 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+`;
+
+const SearchWrapper = styled.div`
+  position: relative;
+  flex: 1;
+  min-width: 250px;
+
+  svg {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+  }
+
+  input {
+    padding-left: 2.75rem;
+  }
+`;
+
+const Select = styled.select`
+  padding: 0.75rem 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  outline: none;
+  transition: var(--transition);
+
+  &:focus {
+    border-color: var(--primary);
+  }
+`;
+
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    padding: 1.25rem 1rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--glass-border);
+  }
+
+  td {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid rgba(0,0,0,0.03);
+    font-size: 0.9rem;
+  }
+
+  tr:hover td {
+    background: rgba(79, 70, 229, 0.02);
+  }
+`;
+
+const RiskBadge = styled.span`
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: ${props => {
+        if (props.level === 'extremo' || props.level === 'Crítico') return 'rgba(239, 68, 68, 0.1)';
+        if (props.level === 'alto' || props.level === 'Moderado') return 'rgba(245, 158, 11, 0.1)';
+        return 'rgba(16, 185, 129, 0.1)';
+    }};
+  color: ${props => {
+        if (props.level === 'extremo' || props.level === 'Crítico') return '#DC2626';
+        if (props.level === 'alto' || props.level === 'Moderado') return '#D97706';
+        return '#059669';
+    }};
+`;
+
+const ActionButton = styled(Link)`
+  padding: 0.5rem;
+  border-radius: 8px;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  &:hover {
+    background: rgba(79, 70, 229, 0.1);
+  }
+`;
 
 export default function Expedientes() {
-    const [searchParams] = useSearchParams()
-    const [expedientes, setExpedientes] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [filters, setFilters] = useState({
-        estado: searchParams.get('estado') || '',
-        nivel_riesgo: searchParams.get('riesgo') || '',
-        busqueda: ''
-    })
-    const [pagination, setPagination] = useState({
-        page: 1,
-        limit: 20,
-        total: 0
-    })
-
-    useEffect(() => {
-        loadExpedientes()
-    }, [filters, pagination.page])
-
-    const loadExpedientes = async () => {
-        setLoading(true)
-        try {
-            // Datos de ejemplo mientras no hay backend conectado
-            setExpedientes([
-                { id: 1, radicado: 'HS-2026-00045', victima: 'María García López', agresor: 'Juan Pérez', tipo_caso: 'violencia_intrafamiliar', estado: 'en_valoracion', nivel_riesgo: 'alto', fecha_radicacion: '2026-02-04' },
-                { id: 2, radicado: 'HS-2026-00044', victima: 'Ana Rodríguez M.', agresor: 'Carlos Gómez', tipo_caso: 'violencia_pareja', estado: 'medidas_proteccion', nivel_riesgo: 'extremo', fecha_radicacion: '2026-02-03' },
-                { id: 3, radicado: 'HS-2026-00043', victima: 'Carmen López', agresor: 'Pedro Martínez', tipo_caso: 'violencia_genero', estado: 'seguimiento', nivel_riesgo: 'medio', fecha_radicacion: '2026-02-02' },
-                { id: 4, radicado: 'HS-2026-00042', victima: 'Lucía Martínez', agresor: 'Andrés Silva', tipo_caso: 'violencia_intrafamiliar', estado: 'radicado', nivel_riesgo: 'bajo', fecha_radicacion: '2026-02-01' },
-                { id: 5, radicado: 'HS-2026-00041', victima: 'Rosa Hernández', agresor: 'Miguel Torres', tipo_caso: 'violencia_pareja', estado: 'audiencia_programada', nivel_riesgo: 'alto', fecha_radicacion: '2026-01-31' },
-            ])
-            setPagination(prev => ({ ...prev, total: 45 }))
-        } catch (error) {
-            console.error('Error cargando expedientes:', error)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target
-        setFilters(prev => ({ ...prev, [name]: value }))
-        setPagination(prev => ({ ...prev, page: 1 }))
-    }
-
-    const getEstadoLabel = (estado) => {
-        const labels = {
-            'radicado': 'Radicado',
-            'en_valoracion': 'En Valoración',
-            'citacion_audiencia': 'Citación',
-            'audiencia_programada': 'Audiencia',
-            'medidas_proteccion': 'Medidas',
-            'seguimiento': 'Seguimiento',
-            'archivado': 'Archivado',
-            'cerrado': 'Cerrado'
-        }
-        return labels[estado] || estado
-    }
-
-    const getTipoCasoLabel = (tipo) => {
-        const labels = {
-            'violencia_intrafamiliar': 'V. Intrafamiliar',
-            'violencia_genero': 'V. de Género',
-            'violencia_pareja': 'V. de Pareja',
-            'violencia_nna': 'V. contra NNA',
-        }
-        return labels[tipo] || tipo
-    }
+    const [searchParams] = useSearchParams();
+    const [expedientes, setExpedientes] = useState([
+        { id: 1, radicado: 'HS-2026-00045', victima: 'María García López', agresor: 'Juan Pérez', nivel_riesgo: 'Crítico', fecha: '2026-02-04' },
+        { id: 2, radicado: 'HS-2026-00044', victima: 'Ana Rodríguez M.', agresor: 'Carlos Gómez', nivel_riesgo: 'Moderado', fecha: '2026-02-03' },
+        { id: 3, radicado: 'HS-2026-00043', victima: 'Carmen López', agresor: 'Pedro Martínez', nivel_riesgo: 'Bajo', fecha: '2026-02-02' },
+    ]);
 
     return (
-        <div className="expedientes-page">
-            <div className="page-header">
-                <div>
-                    <h1><FileText size={28} /> Expedientes</h1>
-                    <p>Gestión de casos y expedientes radicados</p>
-                </div>
-                <Link to="/radicar" className="btn btn-primary">
-                    + Radicar Nuevo
-                </Link>
-            </div>
-
-            {/* Filtros */}
-            <div className="filters-bar">
-                <div className="search-box">
-                    <Search size={18} />
-                    <input
-                        type="text"
-                        placeholder="Buscar por radicado, nombre..."
-                        name="busqueda"
-                        value={filters.busqueda}
-                        onChange={handleFilterChange}
-                    />
-                </div>
-
-                <div className="filters-group">
-                    <input
-                        type="date"
-                        name="fechaInicio"
-                        className="date-filter"
-                        placeholder="Desde"
-                        title="Fecha Inicio"
-                    />
-                    <input
-                        type="date"
-                        name="fechaFin"
-                        className="date-filter"
-                        placeholder="Hasta"
-                        title="Fecha Fin"
-                    />
-                    <select
-                        name="estado"
-                        value={filters.estado}
-                        onChange={handleFilterChange}
-                    >
-                        <option value="">Todos los estados</option>
-                        <option value="radicado">Radicado</option>
-                        <option value="en_valoracion">En Valoración</option>
-                        <option value="audiencia_programada">Audiencia</option>
-                        <option value="medidas_proteccion">Medidas</option>
-                        <option value="seguimiento">Seguimiento</option>
-                    </select>
-
-                    <select
-                        name="nivel_riesgo"
-                        value={filters.nivel_riesgo}
-                        onChange={handleFilterChange}
-                    >
-                        <option value="">Todos los riesgos</option>
-                        <option value="bajo">Bajo</option>
-                        <option value="medio">Medio</option>
-                        <option value="alto">Alto</option>
-                        <option value="extremo">Extremo</option>
-                    </select>
-                </div>
-            </div>
-
-            {/* Tabla de Expedientes */}
-            <div className="expedientes-table-wrapper">
-                <table className="expedientes-table">
-                    <thead>
-                        <tr>
-                            <th>Radicado</th>
-                            <th>Víctima</th>
-                            <th>Agresor</th>
-                            <th>Tipo</th>
-                            <th>Estado</th>
-                            <th>Riesgo</th>
-                            <th>Fecha</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {expedientes.map(exp => (
-                            <tr key={exp.id}>
-                                <td>
-                                    <Link to={`/expedientes/${exp.id}`} className="radicado-link">
-                                        {exp.radicado}
-                                    </Link>
-                                </td>
-                                <td>{exp.victima}</td>
-                                <td>{exp.agresor}</td>
-                                <td>
-                                    <span className="tipo-badge">{getTipoCasoLabel(exp.tipo_caso)}</span>
-                                </td>
-                                <td>
-                                    <span className={`estado-badge ${exp.estado}`}>
-                                        {getEstadoLabel(exp.estado)}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span className={`risk-badge ${exp.nivel_riesgo}`}>
-                                        {exp.nivel_riesgo}
-                                    </span>
-                                </td>
-                                <td>{exp.fecha_radicacion}</td>
-                                <td>
-                                    <Link
-                                        to={`/expedientes/${exp.id}`}
-                                        className="btn btn-sm btn-secondary"
-                                        title="Ver Detalles del Expediente" // Tooltip added
-                                    >
-                                        <Eye size={16} />
-                                    </Link>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Paginación */}
-            <div className="pagination">
-                <span className="pagination-info">
-                    Mostrando {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} de {pagination.total}
-                </span>
-                <div className="pagination-controls">
-                    <button
-                        className="btn btn-secondary btn-sm"
-                        disabled={pagination.page === 1}
-                        onClick={() => setPagination(p => ({ ...p, page: p.page - 1 }))}
-                    >
-                        <ChevronLeft size={18} />
-                    </button>
-                    <span className="page-number">{pagination.page}</span>
-                    <button
-                        className="btn btn-secondary btn-sm"
-                        disabled={pagination.page * pagination.limit >= pagination.total}
-                        onClick={() => setPagination(p => ({ ...p, page: p.page + 1 }))}
-                    >
-                        <ChevronRight size={18} />
-                    </button>
-                </div>
-            </div>
+    <PageContainer>
+      <PageHeader>
+        <div>
+          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Expedientes</h1>
+          <p style={{ color: 'var(--text-muted)' }}>Listado histórico y gestión de casos.</p>
         </div>
-    )
+        <Link to="/radicacion" style={{ 
+          background: 'var(--primary)', 
+          color: 'white', 
+          padding: '0.75rem 1.5rem', 
+          borderRadius: '12px', 
+          textDecoration: 'none', 
+          fontWeight: 600,
+          display: 'flex',
+          align-items: 'center',
+          gap: '0.5rem'
+        }}>
+          <PlusCircle size={18} />
+          Nuevo Expediente
+        </Link>
+      </PageHeader>
+
+      <FilterBar>
+        <SearchWrapper>
+          <Search size={18} />
+          <StyledInput placeholder="Buscar por radicado o víctima..." />
+        </SearchWrapper>
+        <Select>
+          <option value="">Todos los Estados</option>
+          <option value="radicado">Radicado</option>
+          <option value="en_valoracion">En Valoración</option>
+        </Select>
+        <Select>
+          <option value="">Riesgo (Todos)</option>
+          <option value="bajo">Bajo</option>
+          <option value="moderado">Moderado</option>
+          <option value="critico">Crítico</option>
+        </Select>
+      </FilterBar>
+
+      <GlassCard style={{ padding: '0' }}>
+        <Table>
+          <thead>
+            <tr>
+              <th>Radicado</th>
+              <th>Víctima</th>
+              <th>Agresor</th>
+              <th>Riesgo</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {expedientes.map(exp => (
+              <motion.tr 
+                key={exp.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                whileHover={{ background: 'rgba(0,0,0,0.01)' }}
+              >
+                <td style={{ fontWeight: 700, color: 'var(--primary)' }}>{exp.radicado}</td>
+                <td>{exp.victima}</td>
+                <td style={{ color: 'var(--text-muted)' }}>{exp.agresor}</td>
+                <td><RiskBadge level={exp.nivel_riesgo}>{exp.nivel_riesgo}</RiskBadge></td>
+                <td>{exp.fecha}</td>
+                <td>
+                  <ActionButton to={`/expedientes/${exp.id}`}>
+                    <Eye size={18} />
+                  </ActionButton>
+                </td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </Table>
+      </GlassCard>
+    </PageContainer >
+  );
 }
