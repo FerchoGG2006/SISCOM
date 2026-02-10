@@ -73,8 +73,15 @@ class RiskCalculator {
             const itemsPositivos = [];
 
             for (const itemNum of config.items) {
-                const key = `item_${String(itemNum).padStart(2, '0')}`;
-                if (respuestas[key] === true) {
+                // Construir el prefijo del item (ej: "item_01")
+                const prefix = `item_${String(itemNum).padStart(2, '0')}`;
+
+                // Buscar la clave completa en las respuestas que empiece con el prefijo
+                // Esto maneja tanto "item_01" como "item_01_insultos"
+                const key = Object.keys(respuestas).find(k => k.startsWith(prefix));
+
+                // Verificar si el valor es verdadero (true o 1)
+                if (key && (respuestas[key] === true || respuestas[key] === 1 || respuestas[key] === '1')) {
                     puntajeSeccion += config.puntaje;
                     itemsPositivos.push(itemNum);
                 }
