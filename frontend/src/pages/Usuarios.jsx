@@ -121,10 +121,11 @@ export default function Usuarios() {
                     <h1><Users size={28} /> Gestión de Usuarios</h1>
                     <p>Administre los usuarios del sistema</p>
                 </div>
-                <button className="btn btn-primary" onClick={() => handleOpenModal()}>
+                <button className="btn-premium btn-premium-primary" style={{ padding: '0.8rem 1.5rem' }} onClick={() => handleOpenModal()}>
                     <UserPlus size={18} />
                     Nuevo Usuario
                 </button>
+
             </div>
 
             <div className="usuarios-toolbar">
@@ -142,39 +143,48 @@ export default function Usuarios() {
             <div className="usuarios-grid">
                 {filteredUsuarios.map(user => (
                     <div key={user.id} className="usuario-card">
-                        <div className="usuario-avatar">
-                            {user.nombres.charAt(0)}{user.apellidos.charAt(0)}
+                        <div className="usuario-actions">
+                            <button className="btn-icon" title="Editar" onClick={() => handleOpenModal(user)}>
+                                <Edit size={16} />
+                            </button>
+                            <button className="btn-icon danger" title="Eliminar" onClick={() => handleDelete(user.id)}>
+                                <Trash2 size={16} />
+                            </button>
                         </div>
-                        <div className="usuario-info">
-                            <h3>{user.nombres} {user.apellidos}</h3>
-                            <p className="email">{user.email}</p>
-                            <p className="cargo">{user.cargo}</p>
+
+                        <div className="usuario-header">
+                            <div className="usuario-avatar">
+                                {user.nombres.charAt(0)}{user.apellidos.charAt(0)}
+                            </div>
+                            <div className="usuario-info">
+                                <h3>{user.nombres} {user.apellidos}</h3>
+                                <p className="email">{user.email}</p>
+                                <p className="cargo">{user.cargo}</p>
+                            </div>
+                        </div>
+
+                        <div>
                             <span
                                 className="rol-badge"
                                 style={{ backgroundColor: getRolInfo(user.rol).color }}
                             >
+                                <Shield size={12} style={{ marginRight: '6px' }} />
                                 {getRolInfo(user.rol).label}
                             </span>
                         </div>
+
                         <div className="usuario-meta">
                             <span className={`status ${user.activo ? 'active' : 'inactive'}`}>
                                 {user.activo ? 'Activo' : 'Inactivo'}
                             </span>
                             <span className="last-access">
-                                Último acceso: {user.ultimo_acceso}
+                                {user.ultimo_acceso}
                             </span>
-                        </div>
-                        <div className="usuario-actions">
-                            <button className="btn-icon" onClick={() => handleOpenModal(user)}>
-                                <Edit size={18} />
-                            </button>
-                            <button className="btn-icon danger" onClick={() => handleDelete(user.id)}>
-                                <Trash2 size={18} />
-                            </button>
                         </div>
                     </div>
                 ))}
             </div>
+
 
             {/* Modal de Usuario */}
             {showModal && (
@@ -272,10 +282,11 @@ export default function Usuarios() {
                                 <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
                                     Cancelar
                                 </button>
-                                <button type="submit" className="btn btn-primary">
+                                <button type="submit" className="btn-premium btn-premium-primary" style={{ width: '100%', padding: '1rem' }}>
                                     <Check size={18} />
                                     {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
                                 </button>
+
                             </div>
                         </form>
                     </div>

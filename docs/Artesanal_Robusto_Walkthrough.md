@@ -13,16 +13,18 @@ Se ha implementado el nuevo stack tecnológico basado en la estética **Glass & 
 2.  **`GlassCard.jsx`**: Un componente base reutilizable con `backdrop-filter` y sombras suaves.
 3.  **`Layout.jsx`**: Sidebar animada con efecto cristal y navegación fluida.
 4.  **`RadicacionStepper.jsx`**: Formulario interactivo por pasos para la radicación de expedientes.
+5.  **`Personas.jsx`**: Vista unificada para el seguimiento de ciudadanos (víctimas/agresores) y su historial.
 
-## 🗄️ Base de Datos (Prisma + SQLite)
-El esquema ha sido unificado y optimizado para SQLite:
--   **Model `Persona`**: Maneja tanto víctimas como agresores en una sola tabla robusta.
--   **Model `Expediente`**: Relaciona a las personas y almacena el puntaje de riesgo y la carpeta de Drive.
--   **Model `EvaluacionRiesgo`**: Almacena las respuestas detalladas de las evaluaciones.
+## 🛡️ Robustez y Recuperación
+El sistema incluye mecanismos de fail-safe:
+-   **Drive Sync**: Botón de emergencia en el detalle del expediente para crear/reparar carpetas en Google Drive si falló la conexión inicial.
+-   **Transacciones Atómicas**: El uso de Prisma asegura que los datos de radicación sean consistentes incluso si fallan servicios externos.
 
 ## 🚀 Cómo empezar
-1.  **Frontend**: Los nuevos estilos ya están integrados en `App.jsx`. Puedes ver el flujo de radicación en `http://localhost:4001/radicacion`.
-2.  **Backend**: Se ha generado el cliente de Prisma y se ha sincronizado la base de datos (`dev.db`). Puedes usar `require('./lib/prisma')` para interactuar con la base de datos de forma segura.
+1.  **Explorar Personas**: Navega a `/personas` para ver el registro unificado y el conteo de casos por rol.
+2.  **Gestión de Expedientes**: En `/expedientes/:id`, puedes generar PDF y reparar la conexión con Drive mediante el botón de sincronización.
+3.  **Configuración**: Asegúrate de revisar `driveService.js` para cuando se pase de mock a producción con credenciales reales.
+
 
 ---
 *Este sistema está diseñado para ser visualmente impactante y técnicamente inexpugnable.*

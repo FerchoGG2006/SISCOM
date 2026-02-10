@@ -32,9 +32,10 @@ export default function Configuracion() {
                     <h1><SettingsIcon size={28} /> Configuración</h1>
                     <p>Ajuste los parámetros del sistema</p>
                 </div>
-                <button className="btn btn-primary" onClick={handleSave}>
+                <button className="btn-premium btn-premium-primary" style={{ padding: '0.8rem 1.5rem' }} onClick={handleSave}>
                     <Save size={18} /> Guardar
                 </button>
+
             </div>
 
             <div className="config-layout">
@@ -113,10 +114,21 @@ export default function Configuracion() {
                     {activeTab === 'integraciones' && (
                         <div className="config-section">
                             <h2>Google Drive</h2>
-                            <p>Estado: {config.driveActivo ? 'Conectado' : 'Desconectado'}</p>
-                            <button className="btn btn-secondary">Probar Conexión</button>
+                            <div className="integrations-info">
+                                <div className="integrations-status">
+                                    <div className={`status-dot ${config.driveActivo ? 'active' : ''}`}></div>
+                                    <span>Estado: {config.driveActivo ? 'Conectado Corely' : 'Desconectado'}</span>
+                                </div>
+                                <p style={{ color: 'var(--text-muted)', fontWeight: 600 }}>
+                                    La integración con Google Drive permite la creación automática de carpetas para cada caso y el almacenamiento seguro de los documentos generados.
+                                </p>
+                                <button className="btn-premium btn-premium-primary" style={{ padding: '0.8rem 1.5rem' }}>
+                                    Probar Conexión
+                                </button>
+                            </div>
                         </div>
                     )}
+
                 </div>
             </div>
         </div>

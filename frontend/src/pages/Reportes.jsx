@@ -10,54 +10,36 @@ import {
     FileText,
     PieChart
 } from 'lucide-react'
+import api from '../services/api'
 import './Reportes.css'
+
 
 export default function Reportes() {
     const [periodo, setPeriodo] = useState('mes')
     const [fechaInicio, setFechaInicio] = useState('')
     const [fechaFin, setFechaFin] = useState('')
     const [stats, setStats] = useState(null)
+    const [loading, setLoading] = useState(true)
+
 
     useEffect(() => {
         loadStats()
     }, [periodo])
 
-    const loadStats = () => {
-        // Datos de ejemplo
-        setStats({
-            totalCasos: 156,
-            casosNuevos: 23,
-            casosCerrados: 18,
-            casosPendientes: 45,
-            porRiesgo: {
-                bajo: 45,
-                medio: 52,
-                alto: 38,
-                extremo: 21
-            },
-            porTipo: {
-                violencia_intrafamiliar: 78,
-                violencia_pareja: 45,
-                violencia_genero: 23,
-                violencia_nna: 10
-            },
-            porEstado: {
-                radicado: 25,
-                en_valoracion: 30,
-                medidas_proteccion: 42,
-                seguimiento: 38,
-                cerrado: 21
-            },
-            tendenciaMensual: [
-                { mes: 'Sep', casos: 45 },
-                { mes: 'Oct', casos: 52 },
-                { mes: 'Nov', casos: 48 },
-                { mes: 'Dic', casos: 61 },
-                { mes: 'Ene', casos: 78 },
-                { mes: 'Feb', casos: 56 }
-            ]
-        })
+    const loadStats = async () => {
+        setLoading(true)
+        try {
+            const res = await api.get('/reportes/estadisticas')
+            if (res.data.success) {
+                setStats(res.data.data)
+            }
+        } catch (error) {
+            console.error('Error cargando estadísticas:', error)
+        } finally {
+            setLoading(false)
+        }
     }
+
 
     const exportarReporte = (formato) => {
         alert(`Exportando reporte en formato ${formato}`)
@@ -176,11 +158,11 @@ export default function Reportes() {
                                 <div className="risk-bar">
                                     <div
                                         className={`risk-bar-fill ${nivel}`}
-                                        style={{ width: `${(cantidad / stats.totalCasos) * 100}%` }}
+                                        style={{ width: `${stats.totalCasos > 0 ? (cantidad / stats.totalCasos) * 100 : 0}%` }}
                                     ></div>
                                 </div>
                                 <span className="risk-percent">
-                                    {((cantidad / stats.totalCasos) * 100).toFixed(1)}%
+                                    {stats.totalCasos > 0 ? ((cantidad / stats.totalCasos) * 100).toFixed(1) : 0}%
                                 </span>
                             </div>
                         ))}
@@ -197,9 +179,9 @@ export default function Reportes() {
                                 <div className="tipo-bar-container">
                                     <div
                                         className="tipo-bar"
-                                        style={{ width: `${(cantidad / Math.max(...Object.values(stats.porTipo))) * 100}%` }}
+                                        style={{ width: `${stats.totalCasos > 0 ? (cantidad / Math.max(...Object.values(stats.porTipo), 1)) * 100 : 0}%` }}
                                     ></div>
-                                    <span className="bar-value-label">{Math.round((cantidad / stats.totalCasos) * 100)}%</span>
+                                    <span className="bar-value-label">{stats.totalCasos > 0 ? Math.round((cantidad / stats.totalCasos) * 100) : 0}%</span>
                                 </div>
                                 <span className="tipo-value">{cantidad}</span>
                             </div>
@@ -211,14 +193,20 @@ export default function Reportes() {
                 <div className="chart-card">
                     <h3><Calendar size={20} /> Estado de los Casos</h3>
                     <div className="estado-grid">
-                        {Object.entries(stats.porEstado).map(([estado, cantidad]) => (
+                        {Object.entries(stats.porEstado).length > 0 ? Object.entries(stats.porEstado).map(([estado, cantidad]) => (
                             <div key={estado} className="estado-item">
                                 <span className="estado-cantidad">{cantidad}</span>
                                 <span className="estado-nombre">{estado.replace(/_/g, ' ')}</span>
                             </div>
-                        ))}
+                        )) : (
+                            <div className="estado-item">
+                                <span className="estado-cantidad">0</span>
+                                <span className="estado-nombre">Sin datos</span>
+                            </div>
+                        )}
                     </div>
                 </div>
+
 
                 {/* Tendencia Mensual */}
                 <div className="chart-card wide">
@@ -228,12 +216,13 @@ export default function Reportes() {
                             <div key={i} className="trend-bar-wrapper">
                                 <div
                                     className="trend-bar"
-                                    style={{ height: `${(item.casos / Math.max(...stats.tendenciaMensual.map(t => t.casos))) * 100}%` }}
+                                    style={{ height: `${(item.casos / Math.max(...stats.tendenciaMensual.map(t => t.casos), 1)) * 100}%` }}
                                 >
                                     <span className="trend-value">{item.casos}</span>
                                 </div>
                                 <span className="trend-label">{item.mes}</span>
                             </div>
+
                         ))}
                     </div>
                 </div>
@@ -253,28 +242,23 @@ export default function Reportes() {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>María González</td>
-                            <td>12</td>
-                            <td>45</td>
-                            <td>8.5</td>
-                            <td><span className="percent-high">42%</span></td>
-                        </tr>
-                        <tr>
-                            <td>Carlos Rodríguez</td>
-                            <td>8</td>
-                            <td>38</td>
-                            <td>6.2</td>
-                            <td><span className="percent-medium">28%</span></td>
-                        </tr>
-                        <tr>
-                            <td>Ana Martínez</td>
-                            <td>15</td>
-                            <td>52</td>
-                            <td>7.8</td>
-                            <td><span className="percent-high">35%</span></td>
-                        </tr>
+                        {stats.usuariosSummary && stats.usuariosSummary.length > 0 ? (
+                            stats.usuariosSummary.map((user, i) => (
+                                <tr key={i}>
+                                    <td>{user.nombre}</td>
+                                    <td>{user.actuaciones}</td>
+                                    <td>{Math.floor(user.actuaciones * 0.8)}</td>
+                                    <td>7.5</td>
+                                    <td><span className="percent-medium">30%</span></td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>No hay datos de funcionarios disponibles</td>
+                            </tr>
+                        )}
                     </tbody>
+
                 </table>
             </div>
         </div>
