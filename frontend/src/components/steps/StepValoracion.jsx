@@ -112,7 +112,6 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
     const [activeSection, setActiveSection] = useState('seccion1')
 
     useEffect(() => {
-        // Calcular riesgo cuando cambian las respuestas
         const timer = setTimeout(() => {
             if (Object.keys(localData).length > 0) {
                 onCalculate(localData)
@@ -129,12 +128,12 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
 
     const getRiskColor = (nivel) => {
         const colors = {
-            bajo: '#22c55e',
-            medio: '#f59e0b',
-            alto: '#f97316',
-            extremo: '#dc2626'
+            bajo: '#10B981',
+            medio: '#F59E0B',
+            alto: '#F97316',
+            extremo: '#EF4444'
         }
-        return colors[nivel] || '#6b7280'
+        return colors[nivel] || '#64748B'
     }
 
     const countAnswered = (seccion) => {
@@ -151,40 +150,29 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
         <div className="step-valoracion">
             <div className="valoracion-header">
                 <div className="valoracion-title">
-                    <Shield size={24} />
+                    <Shield size={32} color="var(--primary)" />
                     <div>
                         <h3>Instrumento de Valoración de Riesgo</h3>
-                        <p>52 preguntas basadas en el Instrumento Técnico del Ministerio de Justicia</p>
+                        <p>Instrumento Técnico del Ministerio de Justicia (Instrumento de 52 ítems)</p>
                     </div>
                 </div>
 
-                {/* Panel de Resultado en Tiempo Real */}
                 {riskResult && (
-                    <div
-                        className="risk-panel"
-                        style={{ '--risk-color': getRiskColor(riskResult.nivelRiesgo) }}
-                    >
+                    <div className="risk-panel" style={{ '--risk-color': getRiskColor(riskResult.nivelRiesgo) }}>
                         <div className="risk-score">
                             <span className="score-value">{riskResult.puntajeTotal}</span>
-                            <span className="score-label">puntos</span>
+                            <span className="score-label">pts</span>
                         </div>
                         <div className="risk-level">
-                            <span className={`risk-badge ${riskResult.nivelRiesgo}`}>
+                            <span className={`risk-badge ${riskResult.nivelRiesgo?.toLowerCase()}`}>
                                 {riskResult.nivelRiesgo?.toUpperCase()}
                             </span>
                         </div>
-                        {riskResult.alertasEspeciales?.length > 0 && (
-                            <div className="risk-alerts">
-                                <AlertTriangle size={16} />
-                                <span>{riskResult.alertasEspeciales.length} alertas</span>
-                            </div>
-                        )}
                     </div>
                 )}
             </div>
 
             <div className="valoracion-content">
-                {/* Navegación de Secciones */}
                 <div className="section-nav">
                     {Object.entries(PREGUNTAS).map(([key, seccion]) => (
                         <button
@@ -196,8 +184,8 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
                             <div className="section-info">
                                 <span className="section-name">{seccion.titulo}</span>
                                 <span className="section-meta">
-                                    {countAnswered(key)}/{seccion.preguntas.length} •
-                                    {countPositive(key) > 0 && ` ${countPositive(key)} SÍ`}
+                                    {countAnswered(key)}/{seccion.preguntas.length} completado •
+                                    <span style={{ color: countPositive(key) > 0 ? 'var(--danger)' : 'inherit', fontWeight: 700 }}> {countPositive(key)} SÍ</span>
                                 </span>
                             </div>
                             <span className="section-points">{seccion.puntaje}pt</span>
@@ -205,12 +193,11 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
                     ))}
                 </div>
 
-                {/* Preguntas de la Sección Activa */}
                 <div className="questions-panel">
-                    <div className="section-header" style={{ '--section-color': PREGUNTAS[activeSection].color }}>
+                    <div className="section-header" style={{ background: PREGUNTAS[activeSection].color }}>
                         <h4>{PREGUNTAS[activeSection].titulo}</h4>
                         <span className="points-badge">
-                            Cada respuesta "SÍ" suma {PREGUNTAS[activeSection].puntaje} {PREGUNTAS[activeSection].puntaje === 1 ? 'punto' : 'puntos'}
+                            + {PREGUNTAS[activeSection].puntaje} pts por cada "SÍ"
                         </span>
                     </div>
 
@@ -225,22 +212,22 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
                                     {pregunta.texto}
                                     {pregunta.critico && (
                                         <span className="critico-badge">
-                                            <AlertTriangle size={14} /> Crítico
+                                            <AlertTriangle size={12} /> Crítico
                                         </span>
                                     )}
                                 </div>
                                 <div className="question-options">
                                     <button
-                                        className={`option-btn yes ${localData[pregunta.id] === true ? 'selected' : ''}`}
-                                        onClick={() => handleChange(pregunta.id, true)}
-                                    >
-                                        SÍ
-                                    </button>
-                                    <button
                                         className={`option-btn no ${localData[pregunta.id] === false ? 'selected' : ''}`}
                                         onClick={() => handleChange(pregunta.id, false)}
                                     >
                                         NO
+                                    </button>
+                                    <button
+                                        className={`option-btn yes ${localData[pregunta.id] === true ? 'selected' : ''}`}
+                                        onClick={() => handleChange(pregunta.id, true)}
+                                    >
+                                        SÍ
                                     </button>
                                 </div>
                             </div>
@@ -249,13 +236,12 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
                 </div>
             </div>
 
-            {/* Alertas Críticas */}
             {riskResult?.alertasEspeciales?.length > 0 && (
                 <div className="alertas-criticas">
-                    <h4><AlertTriangle size={18} /> Alertas Críticas Detectadas</h4>
+                    <h4><AlertTriangle size={20} /> ALERTA: Factores de Letalidad Detectados</h4>
                     <div className="alertas-list">
                         {riskResult.alertasEspeciales.map((alerta, i) => (
-                            <div key={i} className={`alerta-item ${alerta.tipo.toLowerCase()}`}>
+                            <div key={i} className="alerta-item">
                                 <span className="alerta-tipo">{alerta.tipo}</span>
                                 <span className="alerta-mensaje">{alerta.mensaje}</span>
                             </div>
@@ -266,3 +252,4 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
         </div>
     )
 }
+
