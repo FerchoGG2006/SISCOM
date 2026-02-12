@@ -677,6 +677,72 @@ class PDFGeneratorService {
         };
         return recomendaciones[nivelRiesgo] || recomendaciones.bajo;
     }
+    /**
+     * Genera Citación a Audiencia
+     */
+    async generarCitacionAudiencia(expediente, audiencia, victima, agresor, usuario) {
+        const fileName = `Citacion_Audiencia_${expediente.radicado_hs}.pdf`;
+        const filePath = path.join(this.outputDir, fileName);
+
+        return new Promise((resolve, reject) => {
+            try {
+                const doc = new PDFDocument({
+                    size: 'LETTER',
+                    margins: { top: 50, bottom: 50, left: 60, right: 60 }
+                });
+
+                const stream = fs.createWriteStream(filePath);
+                doc.pipe(stream);
+
+                this._agregarEncabezado(doc, 'CITACIÓN A AUDIENCIA DE CONCILIACIÓN');
+
+                doc.fontSize(10).font('Helvetica')
+                    .text(`Radicado: ${expediente.radicado_hs}`, { align: 'right' })
+                    .text(`Fecha Generación: ${this._formatearFecha(new Date())}`, { align: 'right' });
+                doc.moveDown(2);
+
+                doc.fontSize(11).font('Helvetica-Bold')
+                    .text('ASUNTO: CITACIÓN A DILIGENCIA DE CONCILIACIÓN Y VERIFICACIÓN DE DERECHOS');
+                doc.moveDown(1);
+
+                const fechaAudiencia = this._formatearFecha(audiencia.fecha_programada);
+                const horaAudiencia = format(new Date(audiencia.fecha_programada), 'HH:mm aaa');
+
+                doc.fontSize(10).font('Helvetica')
+                    .text('Respetado(a) ciudadano(a),', { align: 'justify' })
+                    .moveDown(0.5)
+                    .text(`Por medio de la presente, se le cita a comparecer ante este Despacho el día:`, { align: 'justify' })
+                    .moveDown(1);
+
+                doc.fontSize(12).font('Helvetica-Bold')
+                    .text(`FECHA: ${fechaAudiencia}`, { align: 'center' })
+                    .text(`HORA: ${horaAudiencia}`, { align: 'center' })
+                    .text(`LUGAR: ${audiencia.lugar}`, { align: 'center' });
+
+                doc.moveDown(1);
+                doc.fontSize(10).font('Helvetica')
+                    .text('OBJETO: Tratar asuntos relacionados con presuntos hechos de violencia intrafamiliar y definir medidas definitivas.', { align: 'justify' })
+                    .moveDown(1)
+                    .text('ADVERTENCIA: La inasistencia injustificada a esta diligencia se tendrá como indicio grave en su contra y podrá acarrear las sanciones previstas en la Ley, incluyendo multas y conducción por policía.', { align: 'justify' });
+
+                doc.moveDown(3);
+                doc.text('_'.repeat(50), { align: 'center' })
+                    .text('COMISARÍA DE FAMILIA', { align: 'center' });
+
+                doc.end();
+
+                stream.on('finish', () => {
+                    logger.info(`Citación audiencia generada: ${fileName}`);
+                    resolve({ fileName, filePath });
+                });
+
+                stream.on('error', reject);
+            } catch (error) {
+                logger.error('Error generando citación:', error);
+                reject(error);
+            }
+        });
+    }
 }
 
 module.exports = new PDFGeneratorService();

@@ -60,8 +60,25 @@ model Expediente {
   evaluaciones  EvaluacionRiesgo[]
   actuaciones   Actuacion[]
   documentos    Documento[]
+  audiencias    Audiencia[]
 
   @@map("expedientes")
+}
+
+// 7. Tabla de Audiencias
+model Audiencia {
+  id               Int      @id @default(autoincrement())
+  id_expediente    Int
+  fecha_programada DateTime
+  lugar            String   @default("Sala de Audiencias Comisaría")
+  estado           String   @default("Programada") // 'Programada', 'Realizada', 'Cancelada'
+  observaciones    String?
+  notificado       Boolean  @default(false)
+  created_at       DateTime @default(now())
+
+  expediente Expediente @relation(fields: [id_expediente], references: [id])
+
+  @@map("audiencias")
 }
 
 // 3. Tabla de Evaluaciones

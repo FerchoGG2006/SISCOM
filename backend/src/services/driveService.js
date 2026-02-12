@@ -91,3 +91,43 @@ exports.getFileLink = async (folderId) => {
     return `https://drive.google.com/drive/folders/${folderId}`;
 };
 
+/**
+ * Sube un archivo a una carpeta específica de Drive
+ * @param {string} folderId ID de la carpeta destino
+ * @param {string} filePath Ruta local del archivo
+ * @param {string} fileName Nombre del archivo en Drive
+ * @param {string} mimeType Tipo MIME del archivo
+ */
+exports.uploadFile = async (folderId, filePath, fileName, mimeType) => {
+    const drive = getDriveClient();
+
+    if (!drive) {
+        logger.warn(`[DRIVE-SIMULATOR] Modo simulación. Archivo no subido: ${fileName}`);
+        return `simulated_file_id_${Date.now()}`;
+    }
+
+    try {
+        const fileMetadata = {
+            name: fileName,
+            parents: [folderId]
+        };
+
+        const media = {
+            mimeType: mimeType,
+            body: fs.createReadStream(filePath)
+        };
+
+        const file = await drive.files.create({
+            resource: fileMetadata,
+            media: media,
+            fields: 'id, webViewLink, webContentLink'
+        });
+
+        logger.info(`[DRIVE-REAL] Archivo subido exitosamente: ${fileName} (ID: ${file.data.id})`);
+        return file.data;
+    } catch (error) {
+        logger.error(`Error subiendo archivo ${fileName} a Drive:`, error);
+        throw error;
+    }
+};
+
