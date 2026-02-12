@@ -1,3 +1,4 @@
+const prisma = require('../lib/prisma');
 const { startOfDay, endOfDay } = require('date-fns');
 
 const getStats = async (req, res) => {
