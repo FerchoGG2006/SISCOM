@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Users,
     UserPlus,
@@ -7,26 +9,327 @@ import {
     Shield,
     Search,
     X,
-    Check
-} from 'lucide-react'
-import api from '../services/api'
-import './Usuarios.css'
+    Check,
+    Mail,
+    Briefcase,
+    ShieldCheck,
+    UserCircle,
+    Power
+} from 'lucide-react';
+import api from '../services/api';
+
+// --- Styled Components (Legal Dashboard Aesthetic) ---
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+`;
+
+const TitleGroup = styled.div`
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--gray-900);
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  p {
+    color: var(--gray-500);
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+  }
+`;
+
+const AddButton = styled.button`
+  background: var(--primary);
+  color: white;
+  padding: 0.875rem 1.5rem;
+  border-radius: 14px;
+  border: none;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.3);
+    background: var(--primary-dark);
+  }
+`;
+
+const Toolbar = styled.div`
+  background: white;
+  padding: 1.25rem;
+  border-radius: 20px;
+  box-shadow: var(--shadow-premium);
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  border: 1px solid rgba(229, 231, 235, 0.5);
+`;
+
+const SearchBox = styled.div`
+  position: relative;
+  flex: 1;
+
+  svg {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gray-400);
+  }
+
+  input {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 3rem;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 14px;
+    font-size: 0.95rem;
+    color: var(--gray-900);
+    outline: none;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+  }
+`;
+
+const UserGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+`;
+
+const UserCard = styled(motion.div)`
+  background: white;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: var(--primary-light);
+  }
+`;
+
+const UserHeader = styled.div`
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+`;
+
+const Avatar = styled.div`
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: ${props => props.active ? 'var(--primary-glow)' : 'var(--gray-100)'};
+  color: ${props => props.active ? 'var(--primary)' : 'var(--gray-400)'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.25rem;
+`;
+
+const UserInfo = styled.div`
+  flex: 1;
+  h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--gray-900);
+  }
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--gray-500);
+    font-weight: 600;
+  }
+`;
+
+const RoleBadge = styled.span`
+  align-self: flex-start;
+  padding: 0.4rem 0.8rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: ${props => props.bg};
+  color: ${props => props.color};
+`;
+
+const MetaList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+`;
+
+const MetaItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+  font-weight: 500;
+
+  svg {
+    color: var(--gray-400);
+  }
+`;
+
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--gray-50);
+`;
+
+const IconButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: ${props => props.variant === 'danger' ? 'rgba(239, 68, 68, 0.05)' : 'var(--gray-50)'};
+  color: ${props => props.variant === 'danger' ? 'var(--danger)' : 'var(--gray-500)'};
+
+  &:hover {
+    background: ${props => props.variant === 'danger' ? 'var(--danger)' : 'var(--primary)'};
+    color: white;
+    transform: scale(1.05);
+  }
+`;
+
+const ModalOverlay = styled(motion.div)`
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 2rem;
+`;
+
+const ModalContent = styled(motion.div)`
+  background: white;
+  width: 100%;
+  max-width: 550px;
+  border-radius: 30px;
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+`;
+
+const ModalHeader = styled.div`
+  padding: 1.5rem 2rem;
+  background: var(--gray-50);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--gray-200);
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--gray-900);
+  }
+`;
+
+const Form = styled.form`
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gray-700);
+  }
+
+  input, select {
+    padding: 0.875rem 1rem;
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    color: var(--gray-900);
+    outline: none;
+    transition: all 0.2s;
+
+    &:focus {
+      border-color: var(--primary);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+  }
+`;
 
 const ROLES = [
-    { value: 'admin', label: 'Administrador', color: '#dc2626' },
-    { value: 'comisario', label: 'Comisario(a)', color: '#7c3aed' },
-    { value: 'psicologo', label: 'Psicólogo(a)', color: '#0891b2' },
-    { value: 'trabajador_social', label: 'Trabajador(a) Social', color: '#059669' },
-    { value: 'abogado', label: 'Abogado(a)', color: '#d97706' },
-    { value: 'auxiliar', label: 'Auxiliar', color: '#6b7280' },
-]
+    { value: 'admin', label: 'Administrador', bg: '#FEF2F2', color: '#DC2626' },
+    { value: 'comisario', label: 'Comisario(a)', bg: '#F5F3FF', color: '#7C3AED' },
+    { value: 'psicologo', bg: '#ECFEFF', label: 'Psicólogo(a)', color: '#0891B2' },
+    { value: 'trabajador_social', label: 'Trabajador(a) Social', bg: '#ECFDF5', color: '#059669' },
+    { value: 'abogado', label: 'Abogado(a)', bg: '#FFF7ED', color: '#D97706' },
+    { value: 'auxiliar', label: 'Auxiliar', bg: '#F9FAFB', color: '#6B7280' },
+];
 
 export default function Usuarios() {
-    const [usuarios, setUsuarios] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [showModal, setShowModal] = useState(false)
-    const [editingUser, setEditingUser] = useState(null)
-    const [searchTerm, setSearchTerm] = useState('')
+    const [usuarios, setUsuarios] = useState([]);
+    const [filtered, setFiltered] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [editingUser, setEditingUser] = useState(null);
     const [formData, setFormData] = useState({
         nombres: '',
         apellidos: '',
@@ -35,41 +338,49 @@ export default function Usuarios() {
         rol: 'auxiliar',
         cargo: '',
         activo: true
-    })
+    });
 
     useEffect(() => {
-        loadUsuarios()
-    }, [])
+        loadUsuarios();
+    }, []);
+
+    useEffect(() => {
+        const result = usuarios.filter(u =>
+            `${u.nombres} ${u.apellidos}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            u.email.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFiltered(result);
+    }, [searchTerm, usuarios]);
 
     const loadUsuarios = async () => {
-        setLoading(true)
-        // Datos de ejemplo
-        setTimeout(() => {
-            setUsuarios([
-                { id: 1, nombres: 'María', apellidos: 'González', email: 'maria.gonzalez@comisaria.gov.co', rol: 'comisario', cargo: 'Comisaria de Familia', activo: true, ultimo_acceso: '2026-02-04 14:30' },
-                { id: 2, nombres: 'Carlos', apellidos: 'Rodríguez', email: 'carlos.rodriguez@comisaria.gov.co', rol: 'psicologo', cargo: 'Psicólogo', activo: true, ultimo_acceso: '2026-02-04 10:15' },
-                { id: 3, nombres: 'Ana', apellidos: 'Martínez', email: 'ana.martinez@comisaria.gov.co', rol: 'trabajador_social', cargo: 'Trabajadora Social', activo: true, ultimo_acceso: '2026-02-03 16:45' },
-                { id: 4, nombres: 'Luis', apellidos: 'Pérez', email: 'luis.perez@comisaria.gov.co', rol: 'abogado', cargo: 'Abogado Asesor', activo: true, ultimo_acceso: '2026-02-01 09:00' },
-                { id: 5, nombres: 'Admin', apellidos: 'Sistema', email: 'admin@siscom.gov.co', rol: 'admin', cargo: 'Administrador', activo: true, ultimo_acceso: '2026-02-04 17:00' },
-            ])
-            setLoading(false)
-        }, 500)
-    }
+        setLoading(true);
+        try {
+            const res = await api.get('/usuarios');
+            if (res.data.success) {
+                setUsuarios(res.data.data);
+                setFiltered(res.data.data);
+            }
+        } catch (e) {
+            console.error('Error cargando usuarios:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleOpenModal = (user = null) => {
         if (user) {
-            setEditingUser(user)
+            setEditingUser(user);
             setFormData({
                 nombres: user.nombres,
                 apellidos: user.apellidos,
                 email: user.email,
                 password: '',
                 rol: user.rol,
-                cargo: user.cargo,
+                cargo: user.cargo || '',
                 activo: user.activo
-            })
+            });
         } else {
-            setEditingUser(null)
+            setEditingUser(null);
             setFormData({
                 nombres: '',
                 apellidos: '',
@@ -78,220 +389,173 @@ export default function Usuarios() {
                 rol: 'auxiliar',
                 cargo: '',
                 activo: true
-            })
+            });
         }
-        setShowModal(true)
-    }
+        setShowModal(true);
+    };
 
-    const handleCloseModal = () => {
-        setShowModal(false)
-        setEditingUser(null)
-    }
+    const handleToggleStatus = async (user) => {
+        try {
+            await api.put(`/usuarios/${user.id}`, { ...user, activo: !user.activo });
+            loadUsuarios();
+        } catch (e) {
+            alert('Error al cambiar estado');
+        }
+    };
 
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        // Aquí iría la lógica de guardar
-        alert(editingUser ? 'Usuario actualizado' : 'Usuario creado')
-        handleCloseModal()
-        loadUsuarios()
-    }
-
-    const handleDelete = async (userId) => {
-        if (window.confirm('¿Está seguro de eliminar este usuario?')) {
-            // Lógica de eliminación
-            alert('Usuario eliminado')
-            loadUsuarios()
+        e.preventDefault();
+        try {
+            if (editingUser) {
+                await api.put(`/usuarios/${editingUser.id}`, formData);
+            } else {
+                await api.post('/usuarios', formData);
+            }
+            setShowModal(false);
+            loadUsuarios();
+        } catch (e) {
+            alert(e.response?.data?.message || 'Error al guardar usuario');
         }
-    }
+    };
 
-    const getRolInfo = (rol) => {
-        return ROLES.find(r => r.value === rol) || { label: rol, color: '#6b7280' }
-    }
+    const getRoleInfo = (roleValue) => {
+        return ROLES.find(r => r.value === roleValue) || ROLES[5];
+    };
 
-    const filteredUsuarios = usuarios.filter(u =>
-        u.nombres.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.apellidos.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        u.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    if (loading) return null;
 
     return (
-        <div className="usuarios-page">
-            <div className="page-header">
-                <div>
-                    <h1><Users size={28} /> Gestión de Usuarios</h1>
-                    <p>Administre los usuarios del sistema</p>
-                </div>
-                <button className="btn-premium btn-premium-primary" style={{ padding: '0.8rem 1.5rem' }} onClick={() => handleOpenModal()}>
-                    <UserPlus size={18} />
-                    Nuevo Usuario
-                </button>
+        <Container>
+            <Header>
+                <TitleGroup>
+                    <motion.h1 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>Gestión Humana</motion.h1>
+                    <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                        Administra el equipo interdisciplinario y sus permisos
+                    </motion.p>
+                </TitleGroup>
 
-            </div>
+                <AddButton onClick={() => handleOpenModal()}>
+                    <UserPlus size={20} />
+                    Vincular Nuevo Usuario
+                </AddButton>
+            </Header>
 
-            <div className="usuarios-toolbar">
-                <div className="search-box">
-                    <Search size={18} />
+            <Toolbar>
+                <SearchBox>
+                    <Search size={20} />
                     <input
-                        type="text"
-                        placeholder="Buscar usuario..."
+                        placeholder="Buscar por nombre, apellido o correo electrónico..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-                </div>
-            </div>
+                </SearchBox>
+            </Toolbar>
 
-            <div className="usuarios-grid">
-                {filteredUsuarios.map(user => (
-                    <div key={user.id} className="usuario-card">
-                        <div className="usuario-actions">
-                            <button className="btn-icon" title="Editar" onClick={() => handleOpenModal(user)}>
-                                <Edit size={16} />
-                            </button>
-                            <button className="btn-icon danger" title="Eliminar" onClick={() => handleDelete(user.id)}>
-                                <Trash2 size={16} />
-                            </button>
-                        </div>
+            <UserGrid>
+                {filtered.map((user, idx) => {
+                    const roleInfo = getRoleInfo(user.rol);
+                    return (
+                        <UserCard
+                            key={user.id}
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: idx * 0.05 }}
+                        >
+                            <UserHeader>
+                                <Avatar active={user.activo}>
+                                    {user.nombres[0]}{user.apellidos[0]}
+                                </Avatar>
+                                <UserInfo>
+                                    <h3>{user.nombres} {user.apellidos}</h3>
+                                    <p>{user.cargo || 'Funcionario'}</p>
+                                </UserInfo>
+                                <RoleBadge bg={roleInfo.bg} color={roleInfo.color}>
+                                    <Shield size={14} />
+                                    {roleInfo.label}
+                                </RoleBadge>
+                            </UserHeader>
 
-                        <div className="usuario-header">
-                            <div className="usuario-avatar">
-                                {user.nombres.charAt(0)}{user.apellidos.charAt(0)}
-                            </div>
-                            <div className="usuario-info">
-                                <h3>{user.nombres} {user.apellidos}</h3>
-                                <p className="email">{user.email}</p>
-                                <p className="cargo">{user.cargo}</p>
-                            </div>
-                        </div>
+                            <MetaList>
+                                <MetaItem>
+                                    <Mail size={16} />
+                                    {user.email}
+                                </MetaItem>
+                                <MetaItem>
+                                    <Briefcase size={16} />
+                                    Rol: {user.rol}
+                                </MetaItem>
+                                <MetaItem>
+                                    <ShieldCheck size={16} />
+                                    Estado: <span style={{ color: user.activo ? 'var(--success)' : 'var(--danger)', fontWeight: 700 }}>{user.activo ? 'Activo' : 'Inactivo'}</span>
+                                </MetaItem>
+                            </MetaList>
 
-                        <div>
-                            <span
-                                className="rol-badge"
-                                style={{ backgroundColor: getRolInfo(user.rol).color }}
-                            >
-                                <Shield size={12} style={{ marginRight: '6px' }} />
-                                {getRolInfo(user.rol).label}
-                            </span>
-                        </div>
+                            <Actions>
+                                <IconButton title="Cambiar Estado" variant={user.activo ? 'danger' : 'success'} onClick={() => handleToggleStatus(user)}>
+                                    <Power size={18} />
+                                </IconButton>
+                                <IconButton title="Editar Información" onClick={() => handleOpenModal(user)}>
+                                    <Edit size={18} />
+                                </IconButton>
+                            </Actions>
+                        </UserCard>
+                    );
+                })}
+            </UserGrid>
 
-                        <div className="usuario-meta">
-                            <span className={`status ${user.activo ? 'active' : 'inactive'}`}>
-                                {user.activo ? 'Activo' : 'Inactivo'}
-                            </span>
-                            <span className="last-access">
-                                {user.ultimo_acceso}
-                            </span>
-                        </div>
-                    </div>
-                ))}
-            </div>
+            <AnimatePresence>
+                {showModal && (
+                    <ModalOverlay initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowModal(false)}>
+                        <ModalContent initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }} onClick={e => e.stopPropagation()}>
+                            <ModalHeader>
+                                <h2>{editingUser ? 'Editar Funcionario' : 'Nuevo Funcionario'}</h2>
+                                <IconButton onClick={() => setShowModal(false)}><X size={20} /></IconButton>
+                            </ModalHeader>
 
-
-            {/* Modal de Usuario */}
-            {showModal && (
-                <div className="modal-overlay" onClick={handleCloseModal}>
-                    <div className="modal" onClick={e => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>{editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
-                            <button className="btn-close" onClick={handleCloseModal}>
-                                <X size={20} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSubmit}>
-                            <div className="modal-body">
-                                <div className="form-row two-cols">
-                                    <div className="form-group">
-                                        <label className="form-label required">Nombres</label>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            value={formData.nombres}
-                                            onChange={e => setFormData({ ...formData, nombres: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label required">Apellidos</label>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            value={formData.apellidos}
-                                            onChange={e => setFormData({ ...formData, apellidos: e.target.value })}
-                                            required
-                                        />
-                                    </div>
+                            <Form onSubmit={handleSubmit}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <FormGroup>
+                                        <label>Nombres</label>
+                                        <input required value={formData.nombres} onChange={e => setFormData({ ...formData, nombres: e.target.value })} />
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <label>Apellidos</label>
+                                        <input required value={formData.apellidos} onChange={e => setFormData({ ...formData, apellidos: e.target.value })} />
+                                    </FormGroup>
                                 </div>
 
-                                <div className="form-group">
-                                    <label className="form-label required">Correo Electrónico</label>
-                                    <input
-                                        type="email"
-                                        className="form-input"
-                                        value={formData.email}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                        required
-                                    />
-                                </div>
+                                <FormGroup>
+                                    <label>Correo Electrónico</label>
+                                    <input type="email" required value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                                </FormGroup>
 
-                                <div className="form-group">
-                                    <label className="form-label">{editingUser ? 'Nueva Contraseña (dejar vacío para mantener)' : 'Contraseña'}</label>
-                                    <input
-                                        type="password"
-                                        className="form-input"
-                                        value={formData.password}
-                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                        required={!editingUser}
-                                    />
-                                </div>
+                                <FormGroup>
+                                    <label>{editingUser ? 'Nueva Contraseña (opcional)' : 'Contraseña'}</label>
+                                    <input type="password" required={!editingUser} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                                </FormGroup>
 
-                                <div className="form-row two-cols">
-                                    <div className="form-group">
-                                        <label className="form-label required">Rol</label>
-                                        <select
-                                            className="form-select"
-                                            value={formData.rol}
-                                            onChange={e => setFormData({ ...formData, rol: e.target.value })}
-                                        >
-                                            {ROLES.map(rol => (
-                                                <option key={rol.value} value={rol.value}>{rol.label}</option>
-                                            ))}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                                    <FormGroup>
+                                        <label>Rol de Sistema</label>
+                                        <select value={formData.rol} onChange={e => setFormData({ ...formData, rol: e.target.value })}>
+                                            {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                                         </select>
-                                    </div>
-                                    <div className="form-group">
-                                        <label className="form-label">Cargo</label>
-                                        <input
-                                            type="text"
-                                            className="form-input"
-                                            value={formData.cargo}
-                                            onChange={e => setFormData({ ...formData, cargo: e.target.value })}
-                                        />
-                                    </div>
+                                    </FormGroup>
+                                    <FormGroup>
+                                        <label>Cargo Nominal</label>
+                                        <input value={formData.cargo} onChange={e => setFormData({ ...formData, cargo: e.target.value })} placeholder="Ej: Comisario Principal" />
+                                    </FormGroup>
                                 </div>
 
-                                <div className="form-group">
-                                    <label className="checkbox-label">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.activo}
-                                            onChange={e => setFormData({ ...formData, activo: e.target.checked })}
-                                        />
-                                        <span>Usuario activo</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div className="modal-footer">
-                                <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
-                                    Cancelar
-                                </button>
-                                <button type="submit" className="btn-premium btn-premium-primary" style={{ width: '100%', padding: '1rem' }}>
-                                    <Check size={18} />
-                                    {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
-                                </button>
-
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </div>
-    )
+                                <AddButton type="submit" style={{ width: '100%', marginTop: '1rem', padding: '1.25rem' }}>
+                                    <Check size={20} />
+                                    {editingUser ? 'Actualizar Funcionario' : 'Registrar Funcionario'}
+                                </AddButton>
+                            </Form>
+                        </ModalContent>
+                    </ModalOverlay>
+                )}
+            </AnimatePresence>
+        </Container>
+    );
 }

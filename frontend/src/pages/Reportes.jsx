@@ -1,266 +1,358 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     BarChart3,
     Calendar,
     Download,
-    Filter,
     TrendingUp,
     Users,
     AlertTriangle,
     FileText,
-    PieChart
-} from 'lucide-react'
-import api from '../services/api'
-import './Reportes.css'
+    PieChart as PieIcon,
+    ArrowUpRight,
+    ArrowDownRight,
+    Search,
+    Filter
+} from 'lucide-react';
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart,
+    Pie,
+    Cell,
+    AreaChart,
+    Area,
+    Legend
+} from 'recharts';
+import api from '../services/api';
 
+// --- Styled Components (Modern Analytics Aesthetic) ---
+
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-bottom: 5rem;
+`;
+
+const Header = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+`;
+
+const TitleGroup = styled.div`
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--gray-900);
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  p {
+    color: var(--gray-500);
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+  }
+`;
+
+const ActionGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+`;
+
+const ExportBtn = styled.button`
+  background: ${props => props.variant === 'primary' ? 'var(--primary)' : 'white'};
+  color: ${props => props.variant === 'primary' ? 'white' : 'var(--gray-700)'};
+  padding: 0.875rem 1.5rem;
+  border-radius: 14px;
+  border: 1px solid ${props => props.variant === 'primary' ? 'var(--primary)' : 'var(--gray-200)'};
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: ${props => props.variant === 'primary' ? '0 4px 12px rgba(79, 70, 229, 0.2)' : 'none'};
+
+  &:hover {
+    transform: translateY(-2px);
+    background: ${props => props.variant === 'primary' ? 'var(--primary-dark)' : 'var(--gray-50)'};
+    border-color: ${props => props.variant === 'primary' ? 'var(--primary-dark)' : 'var(--gray-300)'};
+  }
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+`;
+
+const StatCard = styled(motion.div)`
+  background: white;
+  padding: 2rem;
+  border-radius: 24px;
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
+const StatHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  .icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: ${props => props.bg};
+    color: ${props => props.color};
+  }
+  
+  .trend {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: ${props => props.isUp ? 'var(--success)' : 'var(--danger)'};
+  }
+`;
+
+const StatValue = styled.div`
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+`;
+
+const StatLabel = styled.div`
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--gray-500);
+`;
+
+const ChartsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const ChartCard = styled.div`
+  background: white;
+  padding: 2rem;
+  border-radius: 24px;
+  box-shadow: var(--shadow-premium);
+  border: 1px solid rgba(229, 231, 235, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  
+  h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--gray-800);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+`;
+
+const COLORS = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
 
 export default function Reportes() {
-    const [periodo, setPeriodo] = useState('mes')
-    const [fechaInicio, setFechaInicio] = useState('')
-    const [fechaFin, setFechaFin] = useState('')
-    const [stats, setStats] = useState(null)
-    const [loading, setLoading] = useState(true)
-
+    const [stats, setStats] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [exporting, setExporting] = useState(false);
 
     useEffect(() => {
-        loadStats()
-    }, [periodo])
+        loadData();
+    }, []);
 
-    const loadStats = async () => {
-        setLoading(true)
+    const loadData = async () => {
+        setLoading(true);
         try {
-            const res = await api.get('/reportes/estadisticas')
+            const res = await api.get('/reportes/estadisticas');
             if (res.data.success) {
-                setStats(res.data.data)
+                setStats(res.data.data);
             }
-        } catch (error) {
-            console.error('Error cargando estadísticas:', error)
+        } catch (e) {
+            console.error(e);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
+    const handleExportExcel = async () => {
+        setExporting(true);
+        try {
+            const response = await api.get('/reportes/exportar-excel', { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `Reporte_SISCOM_${new Date().toISOString().split('T')[0]}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (e) {
+            alert('Error al exportar el reporte');
+        } finally {
+            setExporting(false);
+        }
+    };
 
-    const exportarReporte = (formato) => {
-        alert(`Exportando reporte en formato ${formato}`)
-    }
+    if (loading || !stats) return null;
 
-    if (!stats) return <div>Cargando...</div>
+    // Prepare data for charts
+    const riskData = Object.entries(stats.porRiesgo).map(([name, value]) => ({
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        value
+    }));
+
+    const typeData = Object.entries(stats.porTipo).map(([name, value]) => ({
+        name: name.replace(/_/g, ' ').toUpperCase(),
+        value
+    }));
 
     return (
-        <div className="reportes-page">
-            <div className="page-header">
-                <div>
-                    <h1><BarChart3 size={28} /> Reportes y Estadísticas</h1>
-                    <p>Análisis de casos y métricas del sistema</p>
-                </div>
-                <div className="export-buttons">
-                    <button className="btn btn-secondary" onClick={() => exportarReporte('excel')}>
-                        <Download size={18} />
-                        Excel
-                    </button>
-                    <button className="btn btn-secondary" onClick={() => exportarReporte('pdf')}>
-                        <Download size={18} />
-                        PDF
-                    </button>
-                </div>
-            </div>
+        <Container>
+            <Header>
+                <TitleGroup>
+                    <motion.h1 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>Análisis de Impacto</motion.h1>
+                    <motion.p initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                        Métricas institucionales y seguimiento de productividad
+                    </motion.p>
+                </TitleGroup>
 
-            {/* Filtros */}
-            <div className="reportes-filters">
-                <div className="filter-group">
-                    <label>Período:</label>
-                    <select value={periodo} onChange={e => setPeriodo(e.target.value)}>
-                        <option value="semana">Última semana</option>
-                        <option value="mes">Último mes</option>
-                        <option value="trimestre">Último trimestre</option>
-                        <option value="anio">Último año</option>
-                        <option value="personalizado">Personalizado</option>
-                    </select>
-                </div>
-                {periodo === 'personalizado' && (
-                    <>
-                        <div className="filter-group">
-                            <label>Desde:</label>
-                            <input
-                                type="date"
-                                value={fechaInicio}
-                                onChange={e => setFechaInicio(e.target.value)}
-                            />
-                        </div>
-                        <div className="filter-group">
-                            <label>Hasta:</label>
-                            <input
-                                type="date"
-                                value={fechaFin}
-                                onChange={e => setFechaFin(e.target.value)}
-                            />
-                        </div>
-                    </>
-                )}
-            </div>
+                <ActionGroup>
+                    <ExportBtn onClick={handleExportExcel} disabled={exporting}>
+                        <Download size={20} />
+                        {exporting ? 'Generando...' : 'Exportar Datos (Excel)'}
+                    </ExportBtn>
+                </ActionGroup>
+            </Header>
 
-            {/* Cards de Resumen */}
-            <div className="stats-cards">
-                <div className="stat-card">
-                    <div className="stat-icon blue">
-                        <FileText size={24} />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{stats.totalCasos}</span>
-                        <span className="stat-label">Total Casos</span>
-                    </div>
-                </div>
+            <StatsGrid>
+                <StatCard initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                    <StatHeader bg="rgba(79, 70, 229, 0.1)" color="var(--primary)" isUp={true}>
+                        <div className="icon-box"><FileText size={24} /></div>
+                        <div className="trend"><ArrowUpRight size={16} /> 12%</div>
+                    </StatHeader>
+                    <StatValue>{stats.totalCasos}</StatValue>
+                    <StatLabel>Histórico de Casos</StatLabel>
+                </StatCard>
 
-                <div className="stat-card">
-                    <div className="stat-icon green">
-                        <TrendingUp size={24} />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{stats.casosNuevos}</span>
-                        <span className="stat-label">Casos Nuevos</span>
-                    </div>
-                </div>
+                <StatCard initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+                    <StatHeader bg="rgba(16, 185, 129, 0.1)" color="var(--success)" isUp={true}>
+                        <div className="icon-box"><TrendingUp size={24} /></div>
+                        <div className="trend"><ArrowUpRight size={16} /> 8%</div>
+                    </StatHeader>
+                    <StatValue>{stats.casosNuevos}</StatValue>
+                    <StatLabel>Nuevos (30 días)</StatLabel>
+                </StatCard>
 
-                <div className="stat-card">
-                    <div className="stat-icon orange">
-                        <Users size={24} />
-                    </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{stats.casosPendientes}</span>
-                        <span className="stat-label">Pendientes</span>
-                    </div>
-                </div>
+                <StatCard initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+                    <StatHeader bg="rgba(245, 158, 11, 0.1)" color="var(--warning)" isUp={false}>
+                        <div className="icon-box"><AlertTriangle size={24} /></div>
+                        <div className="trend" style={{ color: 'var(--gray-400)' }}>Estable</div>
+                    </StatHeader>
+                    <StatValue>{stats.casosPendientes}</StatValue>
+                    <StatLabel>Trámites en Curso</StatLabel>
+                </StatCard>
+            </StatsGrid>
 
-                <div className="stat-card">
-                    <div className="stat-icon red">
-                        <AlertTriangle size={24} />
+            <ChartsGrid>
+                <ChartCard>
+                    <h3><TrendingUp size={20} /> Tendencia Histórica de Ingreso</h3>
+                    <div style={{ width: '100%', height: 350 }}>
+                        <ResponsiveContainer>
+                            <AreaChart data={stats.tendenciaMensual}>
+                                <defs>
+                                    <linearGradient id="colorCasos" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#4F46E5" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#4F46E5" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                                <XAxis dataKey="mes" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} />
+                                <Tooltip
+                                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                                />
+                                <Area type="monotone" dataKey="casos" stroke="#4F46E5" strokeWidth={3} fillOpacity={1} fill="url(#colorCasos)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
                     </div>
-                    <div className="stat-info">
-                        <span className="stat-value">{stats.porRiesgo.extremo}</span>
-                        <span className="stat-label">Riesgo Extremo</span>
-                    </div>
-                </div>
-            </div>
+                </ChartCard>
 
-            {/* Gráficos */}
-            <div className="charts-grid">
-                {/* Distribución por Riesgo */}
-                <div className="chart-card">
-                    <h3><PieChart size={20} /> Distribución por Nivel de Riesgo</h3>
-                    <div className="risk-distribution">
-                        {Object.entries(stats.porRiesgo).map(([nivel, cantidad]) => (
-                            <div key={nivel} className="risk-bar-container">
-                                <div className="risk-bar-label">
-                                    <span className="nivel">{nivel.charAt(0).toUpperCase() + nivel.slice(1)}</span>
-                                    <span className="cantidad">{cantidad}</span>
-                                </div>
-                                <div className="risk-bar">
-                                    <div
-                                        className={`risk-bar-fill ${nivel}`}
-                                        style={{ width: `${stats.totalCasos > 0 ? (cantidad / stats.totalCasos) * 100 : 0}%` }}
-                                    ></div>
-                                </div>
-                                <span className="risk-percent">
-                                    {stats.totalCasos > 0 ? ((cantidad / stats.totalCasos) * 100).toFixed(1) : 0}%
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Por Tipo de Caso */}
-                <div className="chart-card">
-                    <h3><BarChart3 size={20} /> Casos por Tipo</h3>
-                    <div className="tipo-list">
-                        {Object.entries(stats.porTipo).map(([tipo, cantidad]) => (
-                            <div key={tipo} className="tipo-item">
-                                <span className="tipo-name">{tipo.replace(/_/g, ' ')}</span>
-                                <div className="tipo-bar-container">
-                                    <div
-                                        className="tipo-bar"
-                                        style={{ width: `${stats.totalCasos > 0 ? (cantidad / Math.max(...Object.values(stats.porTipo), 1)) * 100 : 0}%` }}
-                                    ></div>
-                                    <span className="bar-value-label">{stats.totalCasos > 0 ? Math.round((cantidad / stats.totalCasos) * 100) : 0}%</span>
-                                </div>
-                                <span className="tipo-value">{cantidad}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Por Estado */}
-                <div className="chart-card">
-                    <h3><Calendar size={20} /> Estado de los Casos</h3>
-                    <div className="estado-grid">
-                        {Object.entries(stats.porEstado).length > 0 ? Object.entries(stats.porEstado).map(([estado, cantidad]) => (
-                            <div key={estado} className="estado-item">
-                                <span className="estado-cantidad">{cantidad}</span>
-                                <span className="estado-nombre">{estado.replace(/_/g, ' ')}</span>
-                            </div>
-                        )) : (
-                            <div className="estado-item">
-                                <span className="estado-cantidad">0</span>
-                                <span className="estado-nombre">Sin datos</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-
-                {/* Tendencia Mensual */}
-                <div className="chart-card wide">
-                    <h3><TrendingUp size={20} /> Tendencia de Casos (Últimos 6 meses)</h3>
-                    <div className="trend-chart">
-                        {stats.tendenciaMensual.map((item, i) => (
-                            <div key={i} className="trend-bar-wrapper">
-                                <div
-                                    className="trend-bar"
-                                    style={{ height: `${(item.casos / Math.max(...stats.tendenciaMensual.map(t => t.casos), 1)) * 100}%` }}
+                <ChartCard>
+                    <h3><PieIcon size={20} /> Gravedad del Riesgo</h3>
+                    <div style={{ width: '100%', height: 350 }}>
+                        <ResponsiveContainer>
+                            <PieChart>
+                                <Pie
+                                    data={riskData}
+                                    innerRadius={80}
+                                    outerRadius={120}
+                                    paddingAngle={8}
+                                    dataKey="value"
                                 >
-                                    <span className="trend-value">{item.casos}</span>
-                                </div>
-                                <span className="trend-label">{item.mes}</span>
-                            </div>
-
-                        ))}
+                                    {riskData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend verticalAlign="bottom" height={36} />
+                            </PieChart>
+                        </ResponsiveContainer>
                     </div>
+                </ChartCard>
+            </ChartsGrid>
+
+            <ChartCard>
+                <h3><BarChart3 size={20} /> Distribución por Tipología de Conflicto</h3>
+                <div style={{ width: '100%', height: 400 }}>
+                    <ResponsiveContainer>
+                        <BarChart data={typeData} layout="vertical" margin={{ left: 40, right: 40 }}>
+                            <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F1F5F9" />
+                            <XAxis type="number" hide />
+                            <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 11, fontWeight: 700 }} width={150} />
+                            <Tooltip cursor={{ fill: 'rgba(79, 70, 229, 0.05)' }} />
+                            <Bar dataKey="value" fill="#4F46E5" radius={[0, 10, 10, 0]} barSize={40}>
+                                {typeData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
-            </div>
-
-            {/* Tabla Resumen */}
-            <div className="summary-table-section">
-                <h3>Resumen por Funcionario</h3>
-                <table className="summary-table">
-                    <thead>
-                        <tr>
-                            <th>Funcionario</th>
-                            <th>Casos Activos</th>
-                            <th>Casos Cerrados</th>
-                            <th>Promedio Días</th>
-                            <th>% Alto Riesgo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {stats.usuariosSummary && stats.usuariosSummary.length > 0 ? (
-                            stats.usuariosSummary.map((user, i) => (
-                                <tr key={i}>
-                                    <td>{user.nombre}</td>
-                                    <td>{user.actuaciones}</td>
-                                    <td>{Math.floor(user.actuaciones * 0.8)}</td>
-                                    <td>7.5</td>
-                                    <td><span className="percent-medium">30%</span></td>
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>No hay datos de funcionarios disponibles</td>
-                            </tr>
-                        )}
-                    </tbody>
-
-                </table>
-            </div>
-        </div>
-    )
+            </ChartCard>
+        </Container>
+    );
 }

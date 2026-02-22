@@ -142,4 +142,21 @@ model Usuario {
   @@map("usuarios")
 }
 
+// 8. Tabla de Configuración Global
+model Configuracion {
+  id                    Int      @id @default(1)
+  nombre_entidad        String   @default("Comisaría de Familia")
+  municipio             String   @default("Municipio")
+  departamento          String   @default("Departamento")
+  prefijo_radicado      String   @default("HS")
+  email_notificaciones  Boolean  @default(true)
+  notificar_riesgo_alto Boolean  @default(true)
+  umbral_bajo           Int      @default(16)
+  umbral_medio          Int      @default(50)
+  umbral_alto           Int      @default(150)
+  drive_activo          Boolean  @default(true)
+
+  @@map("configuracion")
+}
+
 

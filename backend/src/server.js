@@ -37,6 +37,7 @@ app.use('/api/v1/expedientes', expedientesRoutes);
 app.use('/api/v1/reportes', reportesRoutes);
 app.use('/api/v1/personas', personasRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/configuracion', require('./routes/configuracion.routes'));
 app.get('/api/v1/search', searchController.searchAll);
 
 

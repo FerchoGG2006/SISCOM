@@ -6,6 +6,7 @@ const reportesController = require('../controllers/reportes.prisma.controller');
 router.use(authMiddleware);
 
 router.get('/estadisticas', reportesController.estadisticasGenerales);
+router.get('/exportar-excel', reportesController.exportarExcel);
 
 module.exports = router;
 
