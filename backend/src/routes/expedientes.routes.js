@@ -9,6 +9,7 @@ router.use(authMiddleware);
 
 router.get('/', ExpedientesController.listar);
 router.get('/:id', ExpedientesController.obtener);
+router.patch('/:id/estado', ExpedientesController.actualizarEstado);
 router.post('/:id/sync-drive', ExpedientesController.syncDrive);
 router.post('/:id/actuaciones', ActuacionController.crear);
 

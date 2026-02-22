@@ -38,6 +38,10 @@ app.use('/api/v1/reportes', reportesRoutes);
 app.use('/api/v1/personas', personasRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/configuracion', require('./routes/configuracion.routes'));
+app.use('/api/v1/ai', require('./routes/ai.routes'));
+app.use('/api/v1/notificaciones', require('./routes/notificaciones.routes'));
+app.use('/api/v1/dms', require('./routes/dms.routes'));
+app.use('/api/v1/audit', require('./routes/audit.routes'));
 app.get('/api/v1/search', searchController.searchAll);
 
 

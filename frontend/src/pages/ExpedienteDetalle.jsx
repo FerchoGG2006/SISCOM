@@ -3,26 +3,28 @@ import { useParams, Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    ArrowLeft,
-    User,
-    UserX,
-    FileText,
-    Shield,
-    Clock,
-    Folder,
-    Download,
-    ExternalLink,
-    Plus,
-    X,
-    AlertTriangle,
-    ChevronRight,
-    Calendar,
-    MapPin,
-    AlertOctagon,
-    AlertCircle,
-    CheckCircle
+  ArrowLeft,
+  User,
+  UserX,
+  FileText,
+  Shield,
+  Clock,
+  Folder,
+  Download,
+  ExternalLink,
+  Plus,
+  X,
+  AlertTriangle,
+  ChevronRight,
+  Calendar,
+  MapPin,
+  AlertOctagon,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react';
 import api from '../services/api';
+import AISummary from '../components/ai/AISummary';
+import EvidenceVault from '../components/dms/EvidenceVault';
 
 // --- Styled Components V2 (Cleaner, Professional) ---
 
@@ -329,241 +331,257 @@ const TimelineContent = styled(Card)`
 
 // Helper component for styled badges
 const renderRiskBadge = (level) => {
-    const l = level?.toLowerCase();
-    let config = { bg: 'var(--gray-100)', color: 'var(--text-muted)', icon: AlertCircle };
-    if (l === 'extremo' || l === 'crítico') config = { bg: '#FEF2F2', color: '#DC2626', icon: AlertOctagon };
-    else if (l === 'alto') config = { bg: '#FFF7ED', color: '#EA580C', icon: AlertTriangle };
-    else if (l === 'medio') config = { bg: '#FFFBEB', color: '#D97706', icon: AlertTriangle };
-    else config = { bg: '#ECFDF5', color: '#059669', icon: CheckCircle };
+  const l = level?.toLowerCase();
+  let config = { bg: 'var(--gray-100)', color: 'var(--text-muted)', icon: AlertCircle };
+  if (l === 'extremo' || l === 'crítico') config = { bg: '#FEF2F2', color: '#DC2626', icon: AlertOctagon };
+  else if (l === 'alto') config = { bg: '#FFF7ED', color: '#EA580C', icon: AlertTriangle };
+  else if (l === 'medio') config = { bg: '#FFFBEB', color: '#D97706', icon: AlertTriangle };
+  else config = { bg: '#ECFDF5', color: '#059669', icon: CheckCircle };
 
-    return (
-        <RiskCard bg={config.color} color="white">
-            <config.icon size={32} style={{ marginBottom: '1rem', opacity: 0.8 }} />
-            <RiskScore>453</RiskScore> {/* Placeholder dynamic score logic if needed */}
-            <RiskLabel>Riesgo {level}</RiskLabel>
-            <span style={{ fontSize: '0.8rem', opacity: 0.8, marginTop: '0.5rem' }}>Puntaje Calculado</span>
-        </RiskCard>
-    );
+  return (
+    <RiskCard bg={config.color} color="white">
+      <config.icon size={32} style={{ marginBottom: '1rem', opacity: 0.8 }} />
+      <RiskScore>453</RiskScore> {/* Placeholder dynamic score logic if needed */}
+      <RiskLabel>Riesgo {level}</RiskLabel>
+      <span style={{ fontSize: '0.8rem', opacity: 0.8, marginTop: '0.5rem' }}>Puntaje Calculado</span>
+    </RiskCard>
+  );
 };
 
 
 export default function ExpedienteDetalle() {
-    const { id } = useParams();
-    const [expediente, setExpediente] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('overview');
+  const { id } = useParams();
+  const [expediente, setExpediente] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
 
-    // UI State for Modal
-    const [showModal, setShowModal] = useState(false);
-    const [generating, setGenerating] = useState(false);
-    const [newActuacion, setNewActuacion] = useState({ tipo: 'Seguimiento', descripcion: '' });
+  // UI State for Modal
+  const [showModal, setShowModal] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [newActuacion, setNewActuacion] = useState({ tipo: 'Seguimiento', descripcion: '' });
 
-    useEffect(() => {
-        loadData();
-    }, [id]);
+  useEffect(() => {
+    loadData();
+  }, [id]);
 
-    const loadData = async () => {
-        setLoading(true);
-        try {
-            const res = await api.get(`/expedientes/${id}`);
-            if (res.data.success) setExpediente(res.data.data);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/expedientes/${id}`);
+      if (res.data.success) setExpediente(res.data.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleAction = async (type) => {
-        setGenerating(true);
-        try {
-            // Mock API call or real one
-            if (type.includes('doc')) {
-                await api.post(`/expedientes/${id}/documentos/${type.replace('doc-', '')}`);
-                alert('Documento generado');
-            }
-            loadData();
-        } catch (e) {
-            alert('Error en la acción');
-        } finally {
-            setGenerating(false);
-        }
-    };
+  const handleAction = async (type) => {
+    setGenerating(true);
+    try {
+      // Mock API call or real one
+      if (type.includes('doc')) {
+        await api.post(`/expedientes/${id}/documentos/${type.replace('doc-', '')}`);
+        alert('Documento generado');
+      }
+      loadData();
+    } catch (e) {
+      alert('Error en la acción');
+    } finally {
+      setGenerating(false);
+    }
+  };
 
-    if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Cargando...</div>;
-    if (!expediente) return <div>No encontrado</div>;
+  if (loading) return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Cargando...</div>;
+  if (!expediente) return <div>No encontrado</div>;
 
-    return (
-        <Container>
-            {/* LEFT SIDEBAR: Persistent Information */}
-            <Sidebar>
-                <div style={{ marginBottom: '1rem' }}>
-                    <BackLink to="/expedientes"><ArrowLeft size={16} /> Volver</BackLink>
-                    <PageTitle>{expediente.radicado_hs}</PageTitle>
-                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <StatusBadge bg="var(--primary-light)" color="white">{expediente.estado}</StatusBadge>
-                        <StatusBadge bg="#F3F4F6" color="#374151">Violencia Familiar</StatusBadge>
-                    </div>
+  return (
+    <Container>
+      {/* LEFT SIDEBAR: Persistent Information */}
+      <Sidebar>
+        <div style={{ marginBottom: '1rem' }}>
+          <BackLink to="/expedientes"><ArrowLeft size={16} /> Volver</BackLink>
+          <PageTitle>{expediente.radicado_hs}</PageTitle>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <StatusBadge bg="var(--primary-light)" color="white">{expediente.estado}</StatusBadge>
+            <StatusBadge bg="#F3F4F6" color="#374151">Violencia Familiar</StatusBadge>
+          </div>
+        </div>
+
+        {/* Risk Card */}
+        {renderRiskBadge(expediente.nivel_riesgo)}
+
+        <AISummary data={expediente} />
+
+        {/* Key Details Card */}
+        <Card>
+          <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Detalles Clave</h3>
+          <InfoList>
+            <InfoItem>
+              <span className="label">Fecha Radicación</span>
+              <span className="value">{new Date(expediente.fecha_radicacion).toLocaleDateString()}</span>
+            </InfoItem>
+            <InfoItem>
+              <span className="label">Víctima</span>
+              <span className="value">{expediente.victima.nombres} {expediente.victima.apellidos}</span>
+            </InfoItem>
+            <InfoItem>
+              <span className="label">Agresor</span>
+              <span className="value">{expediente.agresor?.nombres || 'No registrado'}</span>
+            </InfoItem>
+          </InfoList>
+        </Card>
+
+        {/* Drive Link */}
+        {expediente.drive_folder_id && (
+          <a href={`https://drive.google.com/drive/folders/${expediente.drive_folder_id}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+            <Card style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', border: '1px solid #4F46E5', background: '#EEF2FF' }}>
+              <Folder size={24} color="#4F46E5" />
+              <div>
+                <h4 style={{ margin: 0, color: '#4F46E5', fontWeight: 700 }}>Carpeta Drive</h4>
+                <span style={{ fontSize: '0.8rem', color: '#6366F1' }}>Ver documentos originales</span>
+              </div>
+              <ExternalLink size={16} color="#4F46E5" style={{ marginLeft: 'auto' }} />
+            </Card>
+          </a>
+        )}
+      </Sidebar>
+
+      {/* MAIN CONTENT: Tabs & Dynamic Info */}
+      <MainContent>
+        <TabNav>
+          <TabItem active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>Resumen General</TabItem>
+          <TabItem active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')}>Línea de Tiempo</TabItem>
+          <TabItem active={activeTab === 'docs'} onClick={() => setActiveTab('docs')}>Documentos ({expediente.documentos.length})</TabItem>
+        </TabNav>
+
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+          >
+            {activeTab === 'overview' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                {/* Quick Actions */}
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Acciones Rápidas</h3>
+                  <ActionGrid>
+                    <QuickActionBtn onClick={() => handleAction('doc-oficio-policia')}>
+                      <Shield size={24} color="#EF4444" />
+                      <span>Oficio Policía</span>
+                    </QuickActionBtn>
+                    <QuickActionBtn onClick={() => handleAction('doc-medidas')}>
+                      <FileText size={24} color="#F59E0B" />
+                      <span>Medidas Prot.</span>
+                    </QuickActionBtn>
+                    <QuickActionBtn onClick={() => handleAction('doc-salud')}>
+                      <Plus size={24} color="#10B981" />
+                      <span>Remisión Salud</span>
+                    </QuickActionBtn>
+                    <QuickActionBtn onClick={() => setShowModal(true)}>
+                      <Clock size={24} color="#6366F1" />
+                      <span>Nueva Actuación</span>
+                    </QuickActionBtn>
+                  </ActionGrid>
                 </div>
 
-                {/* Risk Card */}
-                {renderRiskBadge(expediente.nivel_riesgo)}
-
-                {/* Key Details Card */}
+                {/* Facts */}
                 <Card>
-                    <h3 style={{ fontSize: '1rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Detalles Clave</h3>
-                    <InfoList>
-                        <InfoItem>
-                            <span className="label">Fecha Radicación</span>
-                            <span className="value">{new Date(expediente.fecha_radicacion).toLocaleDateString()}</span>
-                        </InfoItem>
-                        <InfoItem>
-                            <span className="label">Víctima</span>
-                            <span className="value">{expediente.victima.nombres} {expediente.victima.apellidos}</span>
-                        </InfoItem>
-                        <InfoItem>
-                            <span className="label">Agresor</span>
-                            <span className="value">{expediente.agresor?.nombres || 'No registrado'}</span>
-                        </InfoItem>
-                    </InfoList>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Relato de los Hechos</h3>
+                  <p style={{ lineHeight: 1.7, color: 'var(--text-main)', fontSize: '1.05rem' }}>
+                    {expediente.relato_hechos || 'Sin relato disponible.'}
+                  </p>
                 </Card>
-
-                {/* Drive Link */}
-                {expediente.drive_folder_id && (
-                    <a href={`https://drive.google.com/drive/folders/${expediente.drive_folder_id}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
-                        <Card style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', border: '1px solid #4F46E5', background: '#EEF2FF' }}>
-                            <Folder size={24} color="#4F46E5" />
-                            <div>
-                                <h4 style={{ margin: 0, color: '#4F46E5', fontWeight: 700 }}>Carpeta Drive</h4>
-                                <span style={{ fontSize: '0.8rem', color: '#6366F1' }}>Ver documentos originales</span>
-                            </div>
-                            <ExternalLink size={16} color="#4F46E5" style={{ marginLeft: 'auto' }} />
-                        </Card>
-                    </a>
-                )}
-            </Sidebar>
-
-            {/* MAIN CONTENT: Tabs & Dynamic Info */}
-            <MainContent>
-                <TabNav>
-                    <TabItem active={activeTab === 'overview'} onClick={() => setActiveTab('overview')}>Resumen General</TabItem>
-                    <TabItem active={activeTab === 'timeline'} onClick={() => setActiveTab('timeline')}>Línea de Tiempo</TabItem>
-                    <TabItem active={activeTab === 'docs'} onClick={() => setActiveTab('docs')}>Documentos ({expediente.documentos.length})</TabItem>
-                </TabNav>
-
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={activeTab}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.2 }}
-                    >
-                        {activeTab === 'overview' && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                                {/* Quick Actions */}
-                                <div>
-                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Acciones Rápidas</h3>
-                                    <ActionGrid>
-                                        <QuickActionBtn onClick={() => handleAction('doc-oficio-policia')}>
-                                            <Shield size={24} color="#EF4444" />
-                                            <span>Oficio Policía</span>
-                                        </QuickActionBtn>
-                                        <QuickActionBtn onClick={() => handleAction('doc-medidas')}>
-                                            <FileText size={24} color="#F59E0B" />
-                                            <span>Medidas Prot.</span>
-                                        </QuickActionBtn>
-                                        <QuickActionBtn onClick={() => handleAction('doc-salud')}>
-                                            <Plus size={24} color="#10B981" />
-                                            <span>Remisión Salud</span>
-                                        </QuickActionBtn>
-                                        <QuickActionBtn onClick={() => setShowModal(true)}>
-                                            <Clock size={24} color="#6366F1" />
-                                            <span>Nueva Actuación</span>
-                                        </QuickActionBtn>
-                                    </ActionGrid>
-                                </div>
-
-                                {/* Facts */}
-                                <Card>
-                                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Relato de los Hechos</h3>
-                                    <p style={{ lineHeight: 1.7, color: 'var(--text-main)', fontSize: '1.05rem' }}>
-                                        {expediente.relato_hechos || 'Sin relato disponible.'}
-                                    </p>
-                                </Card>
-                            </div>
-                        )}
-
-                        {activeTab === 'timeline' && (
-                            <TimelineContainer>
-                                {expediente.actuaciones.map((act) => (
-                                    <TimelineRow key={act.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-                                        <TimelineDot
-                                            bg={act.tipo.includes('Audiencia') ? '#EEF2FF' : 'white'}
-                                            border={act.tipo.includes('Audiencia') ? '#6366F1' : undefined}
-                                            color={act.tipo.includes('Audiencia') ? '#6366F1' : undefined}
-                                        >
-                                            {act.tipo.includes('Audiencia') ? <Calendar size={20} /> : <Clock size={20} />}
-                                        </TimelineDot>
-                                        <TimelineContent>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                                <h4 style={{ margin: 0, fontWeight: 800, fontSize: '1rem' }}>{act.tipo}</h4>
-                                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                                    {new Date(act.fecha).toLocaleString()}
-                                                </span>
-                                            </div>
-                                            <p style={{ margin: 0, color: 'var(--text-main)', fontSize: '0.95rem' }}>{act.descripcion}</p>
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
-                                                Comisario: {act.usuario.nombres}
-                                            </span>
-                                        </TimelineContent>
-                                    </TimelineRow>
-                                ))}
-                            </TimelineContainer>
-                        )}
-
-                        {activeTab === 'docs' && (
-                            <ActionGrid>
-                                {expediente.documentos.map(doc => (
-                                    <Card key={doc.id} as="a" href={doc.url_drive} target="_blank" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem', cursor: 'pointer' }}>
-                                        <div style={{ padding: '1rem', background: '#F3F4F6', borderRadius: '50%' }}>
-                                            <FileText size={24} color="#4B5563" />
-                                        </div>
-                                        <div>
-                                            <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>{doc.tipo}</h4>
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(doc.generado_el).toLocaleDateString()}</span>
-                                        </div>
-                                    </Card>
-                                ))}
-                            </ActionGrid>
-                        )}
-                    </motion.div>
-                </AnimatePresence>
-            </MainContent>
-
-            {/* Simple Modal logic would go here similar to prev version */}
-            {showModal && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
-                    <Card style={{ width: '500px', maxWidth: '90%' }}>
-                        <h3>Nueva Actuación</h3>
-                        <div style={{ margin: '1rem 0' }}>
-                            <textarea
-                                style={{ width: '100%', padding: '0.5rem', minHeight: '100px' }}
-                                placeholder="Detalle de lo sucedido..."
-                                value={newActuacion.descripcion}
-                                onChange={e => setNewActuacion({ ...newActuacion, descripcion: e.target.value })}
-                            />
-                        </div>
-                        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-                            <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
-                            <button className="btn btn-primary" onClick={() => {
-                                // Add logic
-                                setShowModal(false);
-                            }}>Guardar</button>
-                        </div>
-                    </Card>
-                </div>
+              </div>
             )}
-        </Container>
-    );
+
+            {activeTab === 'timeline' && (
+              <TimelineContainer>
+                {expediente.actuaciones.map((act) => (
+                  <TimelineRow key={act.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
+                    <TimelineDot
+                      bg={act.tipo.includes('Audiencia') ? '#EEF2FF' : 'white'}
+                      border={act.tipo.includes('Audiencia') ? '#6366F1' : undefined}
+                      color={act.tipo.includes('Audiencia') ? '#6366F1' : undefined}
+                    >
+                      {act.tipo.includes('Audiencia') ? <Calendar size={20} /> : <Clock size={20} />}
+                    </TimelineDot>
+                    <TimelineContent>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <h4 style={{ margin: 0, fontWeight: 800, fontSize: '1rem' }}>{act.tipo}</h4>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                          {new Date(act.fecha).toLocaleString()}
+                        </span>
+                      </div>
+                      <p style={{ margin: 0, color: 'var(--text-main)', fontSize: '0.95rem' }}>{act.descripcion}</p>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
+                        Comisario: {act.usuario.nombres}
+                      </span>
+                    </TimelineContent>
+                  </TimelineRow>
+                ))}
+              </TimelineContainer>
+            )}
+
+            {activeTab === 'docs' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Bóveda de Evidencias</h3>
+                  <EvidenceVault
+                    expedienteId={id}
+                    documentos={expediente.documentos}
+                    onRefresh={loadData}
+                  />
+                </div>
+
+                <div>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Documentos Oficiales</h3>
+                  <ActionGrid>
+                    {expediente.documentos.filter(d => d.nombre.toLowerCase().includes('.pdf')).map(doc => (
+                      <Card key={doc.id} as="a" href={doc.url_drive} target="_blank" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem', cursor: 'pointer' }}>
+                        <div style={{ padding: '1rem', background: '#F3F4F6', borderRadius: '50%' }}>
+                          <FileText size={24} color="#4B5563" />
+                        </div>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-main)' }}>{doc.tipo}</h4>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(doc.generado_el || Date.now()).toLocaleDateString()}</span>
+                        </div>
+                      </Card>
+                    ))}
+                  </ActionGrid>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </MainContent>
+
+      {/* Simple Modal logic would go here similar to prev version */}
+      {showModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 100 }}>
+          <Card style={{ width: '500px', maxWidth: '90%' }}>
+            <h3>Nueva Actuación</h3>
+            <div style={{ margin: '1rem 0' }}>
+              <textarea
+                style={{ width: '100%', padding: '0.5rem', minHeight: '100px' }}
+                placeholder="Detalle de lo sucedido..."
+                value={newActuacion.descripcion}
+                onChange={e => setNewActuacion({ ...newActuacion, descripcion: e.target.value })}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={() => {
+                // Add logic
+                setShowModal(false);
+              }}>Guardar</button>
+            </div>
+          </Card>
+        </div>
+      )}
+    </Container>
+  );
 }

@@ -1,4 +1,5 @@
 import { FileText } from 'lucide-react'
+import AIAdvisor from '../ai/AIAdvisor'
 
 const TIPOS_CASO = [
     { value: 'violencia_intrafamiliar', label: 'Violencia Intrafamiliar' },
@@ -151,6 +152,7 @@ export default function StepHechos({ data, onUpdate }) {
                         value={data.descripcion_hechos || ''}
                         onChange={handleChange}
                     />
+                    <AIAdvisor text={data.descripcion_hechos} />
                 </div>
             </div>
 

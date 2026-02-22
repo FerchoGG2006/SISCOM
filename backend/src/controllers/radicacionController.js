@@ -3,6 +3,8 @@ const riskService = require('../services/riskService');
 const driveService = require('../services/driveService');
 const pdfGenerator = require('../services/pdfGenerator.service');
 const audienciasController = require('./audiencias.controller');
+const notificacionesController = require('./notificaciones.controller');
+const AuditService = require('./audit.controller');
 
 const radicarCaso = async (req, res) => {
     try {
@@ -122,6 +124,7 @@ const radicarCaso = async (req, res) => {
                     relato_hechos: (datosHecho?.descripcion_hechos) || '',
                     estado: 'Abierto',
                     firma_victima: firma,
+                    metadata_firma: JSON.stringify(req.body.metadata_biometrica || {}),
                     drive_folder_id: 'PENDING',
                 }
             });
@@ -147,6 +150,15 @@ const radicarCaso = async (req, res) => {
                     tipo: 'Radicación',
                     descripcion: `Radicación exitosa del caso ${radicado}. Nivel de riesgo detectado: ${riskResult.level}.`
                 }
+            });
+
+            // Registrar Auditoría
+            await AuditService.log({
+                id_usuario: finalUsuarioId,
+                accion: 'RADICACION',
+                modulo: 'EXPEDIENTES',
+                detalles: `Radicación exitosa de expediente ${radicado}`,
+                ip: req.ip
             });
 
             return { expediente, radicado, riskResult };
@@ -229,6 +241,14 @@ const radicarCaso = async (req, res) => {
                     ]
                 });
                 console.log('[PROTECCION] Documentos generados y registrados exitosamente.');
+
+                // Enviar Notificación de Alerta
+                await notificacionesController.crear({
+                    id_usuario: finalUsuarioId,
+                    titulo: '¡ALERTA DE RIESGO!',
+                    mensaje: `El caso ${result.radicado} ha sido calificado como RIESGO ${nivelRiesgo.toUpperCase()}. Se requiere atención inmediata.`,
+                    tipo: 'danger'
+                });
             } catch (proteccionError) {
                 console.error('Error generando medidas de protección automáticas:', proteccionError);
             }

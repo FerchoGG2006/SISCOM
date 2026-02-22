@@ -13,10 +13,13 @@ import {
   ShieldCheck,
   UserCircle,
   BarChart,
-  UserCog
+  UserCog,
+  Activity,
+  History
 } from 'lucide-react';
 
 import { Outlet } from 'react-router-dom';
+import NotificationDrawer from './NotificationDrawer';
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -128,23 +131,26 @@ const CollapseButton = styled.button`
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 `;
 
-const menuItems = [
-  { icon: <BarChart3 size={20} />, label: 'Dashboard', path: '/' },
-  { icon: <FileText size={20} />, label: 'Radicación', path: '/radicacion' },
-  { icon: <Users size={20} />, label: 'Expedientes', path: '/expedientes' },
-  { icon: <UserCircle size={20} />, label: 'Personas', path: '/personas' },
-  { icon: <BarChart size={20} />, label: 'Reportes', path: '/reportes' },
-  { icon: <UserCog size={20} />, label: 'Usuarios', path: '/usuarios' },
-  { icon: <Settings size={20} />, label: 'Configuración', path: '/config' },
-];
-
-
 export const Layout = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
   const location = useLocation();
+
+  const menuItems = [
+    { icon: <BarChart3 size={20} />, label: 'Dashboard', path: '/' },
+    { icon: <FileText size={20} />, label: 'Radicación', path: '/radicacion' },
+    { icon: <Activity size={20} />, label: 'Flujo Kanban', path: '/kanban' },
+    { icon: <Users size={20} />, label: 'Expedientes', path: '/expedientes' },
+    { icon: <UserCircle size={20} />, label: 'Personas', path: '/personas' },
+    { icon: <BarChart size={20} />, label: 'Reportes', path: '/reportes' },
+    { icon: <UserCog size={20} />, label: 'Usuarios', path: '/usuarios' },
+    { icon: <History size={20} />, label: 'Auditoría', path: '/auditoria' },
+    { icon: <Settings size={20} />, label: 'Configuración', path: '/config' },
+  ];
 
   return (
     <LayoutContainer>
+      <NotificationDrawer isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
       <Sidebar
         animate={{ width: isCollapsed ? 80 : 280 }}
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
@@ -183,6 +189,15 @@ export const Layout = () => {
               )}
             </NavLink>
           ))}
+
+          <LogoutButton
+            as={motion.button}
+            onClick={() => setIsNotifOpen(true)}
+            style={{ marginTop: 'auto', marginBottom: '0.5rem' }}
+          >
+            <Bell size={20} />
+            {!isCollapsed && <span>Notificaciones</span>}
+          </LogoutButton>
 
           <LogoutButton whileHover={{ x: 5 }}>
             <LogOut size={20} />

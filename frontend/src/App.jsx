@@ -14,6 +14,8 @@ import Usuarios from './pages/Usuarios';
 import Reportes from './pages/Reportes';
 import Configuracion from './pages/Configuracion';
 import Personas from './pages/Personas';
+import CasosKanban from './pages/CasosKanban';
+import Auditoria from './pages/Auditoria';
 
 
 function PrivateRoute({ children }) {
@@ -38,9 +40,10 @@ function App() {
                         <Route index element={<Dashboard />} />
                         <Route path="radicacion" element={<RadicarCaso />} />
                         <Route path="expedientes" element={<Expedientes />} />
-
+                        <Route path="kanban" element={<CasosKanban />} />
                         <Route path="expedientes/:id" element={<ExpedienteDetalle />} />
                         <Route path="usuarios" element={<Usuarios />} />
+                        <Route path="auditoria" element={<Auditoria />} />
                         <Route path="reportes" element={<Reportes />} />
                         <Route path="personas" element={<Personas />} />
                         <Route path="config" element={<Configuracion />} />

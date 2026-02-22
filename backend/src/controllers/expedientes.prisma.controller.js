@@ -123,6 +123,38 @@ class ExpedientesPrismaController {
             res.status(500).json({ success: false, message: 'Error en sincronización' });
         }
     }
+
+    /**
+     * PATCH /api/v1/expedientes/:id/estado
+     * Actualiza el estado de un expediente y registra la actuación
+     */
+    static async actualizarEstado(req, res) {
+        const { id } = req.params;
+        const { estado } = req.body;
+        const usuarioId = req.user?.id || 1; // Fallback to 1 if not auth (should be protected)
+
+        try {
+            const expediente = await prisma.expediente.update({
+                where: { id: parseInt(id) },
+                data: { estado }
+            });
+
+            // Registrar actuación del cambio de estado
+            await prisma.actuacion.create({
+                data: {
+                    id_expediente: parseInt(id),
+                    id_usuario: usuarioId,
+                    tipo: 'Cambio de Estado',
+                    descripcion: `El expediente cambió su estado a: ${estado}`
+                }
+            });
+
+            res.json({ success: true, data: expediente });
+        } catch (error) {
+            logger.error('Error actualizando estado:', error);
+            res.status(500).json({ success: false, message: 'Error al actualizar estado' });
+        }
+    }
 }
 
 

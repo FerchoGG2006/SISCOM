@@ -90,6 +90,7 @@ export default function RadicarCaso() {
                 datosHecho: formData.datosHecho,
                 respuestas_riesgo: riskAnswers,
                 firma: formData.firma?.firma, // Base64 string
+                metadata_biometrica: formData.firma?.metadata_biometrica,
                 usuario_id: 1 // Default user for MVP
             }
 

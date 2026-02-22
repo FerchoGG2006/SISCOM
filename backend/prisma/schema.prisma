@@ -54,6 +54,7 @@ model Expediente {
   
   // Google Drive ID
   drive_folder_id  String?
+  metadata_firma   String?  // Metadata biométrica y ambiental (JSON)
   
   victima       Persona @relation("Victima", fields: [id_victima], references: [id])
   agresor       Persona? @relation("Agresor", fields: [id_agresor], references: [id])
@@ -138,6 +139,7 @@ model Usuario {
   created_at       DateTime @default(now())
   
   actuaciones      Actuacion[]
+  auditLogs        AuditLog[]
 
   @@map("usuarios")
 }
@@ -159,4 +161,31 @@ model Configuracion {
   @@map("configuracion")
 }
 
+// 9. Tabla de Notificaciones
+model Notificacion {
+  id            Int      @id @default(autoincrement())
+  id_usuario    Int
+  titulo        String
+  mensaje       String
+  tipo          String   @default("info") // 'info', 'success', 'warning', 'danger'
+  leida         Boolean  @default(false)
+  created_at    DateTime @default(now())
+
+  @@map("notificaciones")
+}
+
+// 9. Tabla de Auditoría (Compliance)
+model AuditLog {
+  id            Int      @id @default(autoincrement())
+  id_usuario    Int?
+  accion        String   // 'LOGIN', 'RADICACION', 'EDICION', 'ELIMINACION', 'DESCARGA'
+  modulo        String   // 'EXPEDIENTES', 'USUARIOS', 'DMS'
+  detalles      String?  // JSON con cambios o info extra
+  ip            String?
+  timestamp     DateTime @default(now())
+
+  usuario       Usuario? @relation(fields: [id_usuario], references: [id])
+
+  @@map("audit_logs")
+}
 

@@ -29,9 +29,46 @@ export default function StepFirma({ data, onUpdate, riskResult, formData }) {
         }
 
         const firmaBase64 = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png')
+
+        // Capturar metadata de validez legal
+        const metadata = {
+            dispositivo: navigator.userAgent,
+            plataforma: navigator.platform,
+            resolucion: `${window.screen.width}x${window.screen.height}`,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString()
+        }
+
+        // Intentar obtener ubicación geográfica
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const bioData = {
+                        ...metadata,
+                        geolocalizacion: {
+                            lat: pos.coords.latitude,
+                            lng: pos.coords.longitude,
+                            precision: pos.coords.accuracy
+                        }
+                    }
+                    finalizarGuardado(firmaBase64, bioData)
+                },
+                (error) => {
+                    console.warn('Geolocation denied or failed:', error)
+                    finalizarGuardado(firmaBase64, metadata)
+                },
+                { timeout: 5000 }
+            )
+        } else {
+            finalizarGuardado(firmaBase64, metadata)
+        }
+    }
+
+    const finalizarGuardado = (firma, metadata) => {
         setFirmado(true)
         onUpdate({
-            firma: firmaBase64,
+            firma,
+            metadata_biometrica: metadata,
             fechaFirma: new Date().toISOString()
         })
     }
