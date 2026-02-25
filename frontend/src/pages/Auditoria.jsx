@@ -3,12 +3,11 @@ import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import {
     ShieldAlert,
-    History,
+    Clock,
     User,
     Calendar,
     Globe,
     Activity,
-    FileSearch,
     RefreshCcw,
     Search
 } from 'lucide-react';
@@ -157,7 +156,7 @@ export default function Auditoria() {
                     </div>
                 </StatCard>
                 <StatCard>
-                    <div className="icon" style={{ background: '#dcfce7', color: '#15803d' }}><FileSearch /></div>
+                    <div className="icon" style={{ background: '#dcfce7', color: '#15803d' }}><Search /></div>
                     <div className="data">
                         <span>Radicaciones Hoy</span>
                         <h4>{logs.filter(l => l.accion === 'RADICACION').length}</h4>
@@ -216,7 +215,7 @@ export default function Auditoria() {
                 </StyledTable>
                 {logs.length === 0 && !loading && (
                     <div style={{ textAlign: 'center', padding: '3rem', opacity: 0.5 }}>
-                        <History size={48} style={{ marginBottom: '1rem' }} />
+                        <Clock size={48} style={{ marginBottom: '1rem' }} />
                         <p>No se encontraron registros de auditoría.</p>
                     </div>
                 )}

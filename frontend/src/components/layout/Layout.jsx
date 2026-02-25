@@ -15,7 +15,8 @@ import {
   BarChart,
   UserCog,
   Activity,
-  History
+  Clock,
+  Bell
 } from 'lucide-react';
 
 import { Outlet } from 'react-router-dom';
@@ -144,7 +145,7 @@ export const Layout = () => {
     { icon: <UserCircle size={20} />, label: 'Personas', path: '/personas' },
     { icon: <BarChart size={20} />, label: 'Reportes', path: '/reportes' },
     { icon: <UserCog size={20} />, label: 'Usuarios', path: '/usuarios' },
-    { icon: <History size={20} />, label: 'Auditoría', path: '/auditoria' },
+    { icon: <Clock size={20} />, label: 'Auditoría', path: '/auditoria' },
     { icon: <Settings size={20} />, label: 'Configuración', path: '/config' },
   ];
 
@@ -198,6 +199,7 @@ export const Layout = () => {
             <Bell size={20} />
             {!isCollapsed && <span>Notificaciones</span>}
           </LogoutButton>
+
 
           <LogoutButton whileHover={{ x: 5 }}>
             <LogOut size={20} />
