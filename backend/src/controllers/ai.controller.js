@@ -38,6 +38,32 @@ class AIController {
             res.status(500).json({ success: false, message: 'Error al generar resumen.' });
         }
     }
+
+    /**
+     * POST /api/v1/ai/chat/:expedienteId
+     */
+    static async chat(req, res) {
+        const { expedienteId } = req.params;
+        const { message, history } = req.body;
+        const prisma = require('../lib/prisma');
+
+        try {
+            const expediente = await prisma.expediente.findUnique({
+                where: { id: parseInt(expedienteId) },
+                include: { victima: true, agresor: true }
+            });
+
+            if (!expediente) {
+                return res.status(404).json({ success: false, message: 'Expediente no encontrado.' });
+            }
+
+            const response = await aiService.chatConContexto(message, history, expediente);
+            res.json({ success: true, response });
+        } catch (error) {
+            logger.error('Error en AIController.chat:', error);
+            res.status(500).json({ success: false, message: 'Error en la comunicación con el Co-pilot.' });
+        }
+    }
 }
 
 module.exports = AIController;

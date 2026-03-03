@@ -337,14 +337,14 @@ export default function Reportes() {
 
             <ChartCard>
                 <h3><BarChart3 size={20} /> Distribución por Tipología de Conflicto</h3>
-                <div style={{ width: '100%', height: 400 }}>
+                <div style={{ width: '100%', height: 350 }}>
                     <ResponsiveContainer>
                         <BarChart data={typeData} layout="vertical" margin={{ left: 40, right: 40 }}>
                             <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F1F5F9" />
                             <XAxis type="number" hide />
                             <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 11, fontWeight: 700 }} width={150} />
                             <Tooltip cursor={{ fill: 'rgba(79, 70, 229, 0.05)' }} />
-                            <Bar dataKey="value" fill="#4F46E5" radius={[0, 10, 10, 0]} barSize={40}>
+                            <Bar dataKey="value" fill="#4F46E5" radius={[0, 10, 10, 0]} barSize={34}>
                                 {typeData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
@@ -352,6 +352,36 @@ export default function Reportes() {
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
+            </ChartCard>
+
+            <ChartCard>
+                <h3><Search size={20} /> Análisis Geográfico: Barrios con Mayor Incidencia</h3>
+                <div style={{ width: '100%', height: 400 }}>
+                    <ResponsiveContainer>
+                        <BarChart data={stats.porBarrio?.map(b => ({ name: b.barrio, count: b.cantidad }))}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                            <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                            <Tooltip
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                            />
+                            <Bar dataKey="count" fill="url(#colorHeat)" radius={[10, 10, 0, 0]}>
+                                <defs>
+                                    <linearGradient id="colorHeat" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
+                                        <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.8} />
+                                    </linearGradient>
+                                </defs>
+                                {stats.porBarrio?.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={index < 3 ? '#EF4444' : '#F59E0B'} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginTop: '1rem' }}>
+                    * Los barrios en rojo representan las zonas con mayor densidad de casos reportados en el último período.
+                </p>
             </ChartCard>
         </Container>
     );

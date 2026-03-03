@@ -25,6 +25,7 @@ import {
 import api from '../services/api';
 import AISummary from '../components/ai/AISummary';
 import EvidenceVault from '../components/dms/EvidenceVault';
+import AICoPilot from '../components/ai/AICoPilot';
 
 // --- Styled Components V2 (Cleaner, Professional) ---
 
@@ -576,6 +577,8 @@ export default function ExpedienteDetalle() {
           </motion.div>
         </AnimatePresence>
       </MainContent>
+
+      <AICoPilot expedienteId={id} data={expediente} />
 
       {/* Simple Modal logic would go here similar to prev version */}
       {showModal && (

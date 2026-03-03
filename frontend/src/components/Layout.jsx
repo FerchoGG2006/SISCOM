@@ -11,6 +11,9 @@ import {
     Bell,
     BarChart3
 } from 'lucide-react'
+import NotificationBell from './common/NotificationBell'
+import { connectSocket, disconnectSocket } from '../services/socket'
+import { useEffect } from 'react'
 import './Layout.css'
 
 export default function Layout() {
@@ -18,9 +21,17 @@ export default function Layout() {
     const navigate = useNavigate()
 
     const handleLogout = () => {
+        disconnectSocket()
         logout()
         navigate('/login')
     }
+
+    useEffect(() => {
+        if (user?.id) {
+            connectSocket(user.id)
+        }
+        return () => disconnectSocket()
+    }, [user])
 
     const menuItems = [
         { to: '/', icon: Home, label: 'Dashboard' },
@@ -72,10 +83,7 @@ export default function Layout() {
                         <h1 className="page-title">Sistema de Gestión</h1>
                     </div>
                     <div className="topbar-right">
-                        <button className="notification-btn">
-                            <Bell size={20} />
-                            <span className="notification-badge">3</span>
-                        </button>
+                        <NotificationBell />
                         <div className="user-info">
                             <div className="user-avatar">
                                 {user?.nombres?.charAt(0)}{user?.apellidos?.charAt(0)}

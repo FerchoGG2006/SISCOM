@@ -43,15 +43,43 @@ app.use('/api/v1/notificaciones', require('./routes/notificaciones.routes'));
 app.use('/api/v1/dms', require('./routes/dms.routes'));
 app.use('/api/v1/audit', require('./routes/audit.routes'));
 app.get('/api/v1/search', searchController.searchAll);
+app.use('/api/v1/stats', require('./routes/stats.routes'));
 
 
 
+
+const http = require('http');
+const { Server } = require('socket.io');
+
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: process.env.CORS_ORIGIN || 'http://localhost:4001',
+        methods: ['GET', 'POST', 'PATCH', 'DELETE']
+    }
+});
+
+// Adjuntar io a la app para usarlo en controladores
+app.set('io', io);
+
+io.on('connection', (socket) => {
+    logger.info(`Cliente conectado: ${socket.id}`);
+
+    socket.on('join', (userId) => {
+        socket.join(`user_${userId}`);
+        logger.debug(`Usuario ${userId} se unió a su canal privado`);
+    });
+
+    socket.on('disconnect', () => {
+        logger.info(`Cliente desconectado: ${socket.id}`);
+    });
+});
 
 // Health Check
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

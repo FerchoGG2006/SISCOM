@@ -86,6 +86,15 @@ class ReportesPrismaController {
                 });
             }
 
+            // Agrupar por Barrio (Mapa de calor geográfico)
+            const barriosRaw = await prisma.persona.groupBy({
+                by: ['barrio'],
+                where: { es_victima: true, barrio: { not: null } },
+                _count: { id: true },
+                orderBy: { _count: { id: 'desc' } },
+                take: 10
+            });
+
             // Reporte resumido
             res.json({
                 success: true,
@@ -102,6 +111,10 @@ class ReportesPrismaController {
                         otros: Math.floor(totalCasos * 0.1)
                     },
                     tendenciaMensual,
+                    porBarrio: barriosRaw.map(b => ({
+                        barrio: b.barrio,
+                        cantidad: b._count.id
+                    })),
                     usuariosSummary: usuariosRaw.map(u => ({
                         nombre: `${u.nombres} ${u.apellidos}`,
                         actuaciones: u._count.actuaciones

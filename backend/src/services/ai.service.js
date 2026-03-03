@@ -74,6 +74,51 @@ class AIService {
     }
 
     /**
+     * Chat interactivo con contexto legal
+     * @param {string} mensaje Mensaje del usuario
+     * @param {Array} historial Historial de mensajes [{role: 'user'|'model', parts: [{text: ''}]}]
+     * @param {Object} expediente Datos del expediente
+     */
+    async chatConContexto(mensaje, historial = [], expediente) {
+        if (!this.enabled) return "SISCOM AI está en modo limitado. No puedo chatear en este momento.";
+
+        try {
+            const systemPrompt = `
+                Eres "SISCOM Co-pilot", un asesor legal experto y empático de una Comisaría de Familia en Colombia.
+                Tu objetivo es ayudar al funcionario a gestionar el caso radicado como ${expediente.radicado_hs}.
+                
+                CONTEXTO DEL CASO:
+                - Víctima: ${expediente.victima.nombres} ${expediente.victima.apellidos}
+                - Agresor: ${expediente.agresor ? `${expediente.agresor.nombres} ${expediente.agresor.apellidos}` : 'No registrado'}
+                - Riesgo: ${expediente.nivel_riesgo} (${expediente.puntaje_riesgo} puntos)
+                - Relato: ${expediente.relato_hechos}
+
+                INSTRUCCIONES:
+                1. Basa tus respuestas SIEMPRE en la Ley 1257 de 2008 y normas concordantes de Colombia.
+                2. Si te piden redactar un acta o documento, genera un borrador PROFESIONAL y estructurado.
+                3. Sé proactivo sugiriendo medidas de protección si el riesgo es alto/extremo.
+                4. Mantén un tono técnico pero accesible para el funcionario.
+                5. Responde de forma concisa si es posible.
+            `;
+
+            const chat = this.model.startChat({
+                history: [
+                    { role: "user", parts: [{ text: systemPrompt }] },
+                    { role: "model", parts: [{ text: "Entendido. Soy SISCOM Co-pilot y estoy listo para asistirle en la gestión de este expediente." }] },
+                    ...historial
+                ],
+            });
+
+            const result = await chat.sendMessage(mensaje);
+            const response = await result.response;
+            return response.text();
+        } catch (error) {
+            logger.error('Error en SISCOM AI Chat:', error);
+            return "Lo siento, tuve un problema al procesar tu solicitud. Por favor intenta de nuevo.";
+        }
+    }
+
+    /**
      * Simulación simplificada si no hay API Key
      */
     fallbackRiesgo(relato) {

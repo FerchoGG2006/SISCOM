@@ -8,5 +8,6 @@ router.use(authMiddleware);
 
 router.post('/analyze', aiController.analyze);
 router.post('/summarize', aiController.summarize);
+router.post('/chat/:expedienteId', aiController.chat);
 
 module.exports = router;

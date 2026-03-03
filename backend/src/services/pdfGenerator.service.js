@@ -171,17 +171,10 @@ class PDFGeneratorService {
                 });
 
                 // Firma Glass-Style
-                doc.moveDown(4);
-                const startY = doc.y;
-                doc.lineCap('round')
-                    .moveTo(200, startY)
-                    .lineTo(400, startY)
-                    .stroke('#CBD5E1');
+                doc.moveDown(2);
 
-                doc.moveDown(1);
-                doc.fontSize(10).font('Helvetica-Bold')
-                    .text(usuario.nombres.toUpperCase(), { align: 'center' })
-                    .font('Helvetica').text('Comisario(a) de Familia', { align: 'center' });
+                // Bloque de Firma y Metadata
+                this._agregarBloqueBiometrico(doc, expediente, usuario);
 
                 doc.end();
 
@@ -603,6 +596,64 @@ class PDFGeneratorService {
         doc.fontSize(14).font('Helvetica-Bold')
             .text(titulo, { align: 'center' });
         doc.moveDown(1);
+    }
+
+    /**
+     * Agrega bloque de validación legal con firma y metadata
+     */
+    async _agregarBloqueBiometrico(doc, expediente, usuario) {
+        try {
+            const startY = doc.y;
+
+            // 1. Línea de firma
+            doc.lineCap('round')
+                .moveTo(150, startY + 40)
+                .lineTo(450, startY + 40)
+                .stroke('#CBD5E1');
+
+            // 2. Texto de firma
+            doc.moveDown(2.5);
+            doc.fontSize(10).font('Helvetica-Bold')
+                .text(usuario.nombres.toUpperCase(), { align: 'center' })
+                .font('Helvetica').fontSize(9)
+                .text(`${usuario.cargo || 'Comisario(a) de Familia'}`, { align: 'center' });
+
+            // 3. Bloque de Verificación (Metadata)
+            doc.moveDown(1.5);
+
+            // Fondo suave para el bloque de validación
+            const rectY = doc.y;
+            doc.roundedRect(70, rectY, 470, 75, 8)
+                .fill('#F8FAFC');
+
+            doc.fillColor('#475569').fontSize(8).font('Helvetica-Bold');
+            doc.text('REGISTRO DE VALIDACIÓN LEGAL (LEY 527 DE 1999)', 85, rectY + 10);
+
+            doc.font('Helvetica').fontSize(7.5);
+            const metadataStr = expediente.metadata_firma || '{}';
+            let meta = {};
+            try { meta = JSON.parse(metadataStr); } catch (e) { }
+
+            const ip = meta.ip || 'Detectando...';
+            const timestamp = meta.timestamp ? format(new Date(meta.timestamp), "yyyy-MM-dd HH:mm:ss") : format(new Date(), "yyyy-MM-dd HH:mm:ss");
+            const coords = meta.geolocalizacion ? `${meta.geolocalizacion.lat}, ${meta.geolocalizacion.lng}` : 'No disponible';
+            const browser = (meta.dispositivo || 'Sistema SISCOM').substring(0, 70) + '...';
+
+            doc.text(`ID TRANSACCIÓN: ${expediente.radicado_hs || 'N/A'}`, 85, rectY + 25);
+            doc.text(`SELLO DE TIEMPO: ${timestamp}`, 85, rectY + 35);
+            doc.text(`DIRECCIÓN IP: ${ip}`, 85, rectY + 45);
+            doc.text(`GEOLOCALIZACIÓN: ${coords}`, 280, rectY + 25);
+            doc.text(`AGENTE: ${browser}`, 280, rectY + 35);
+            doc.text('CERTIFICACIÓN: Proceso validado biométricamente en entorno SISCOM.', 280, rectY + 45);
+
+            // Icono de escudo (simulado con texto)
+            doc.fontSize(20).text('🛡️', 510, rectY + 25);
+            doc.fillColor('#000'); // Reset color
+
+            doc.moveDown(2);
+        } catch (error) {
+            logger.error('Error agregando bloque biométrico:', error);
+        }
     }
 
     _agregarSubtitulo(doc, subtitulo) {

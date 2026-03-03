@@ -23,7 +23,7 @@ export default function StepFirma({ data, onUpdate, riskResult, formData }) {
         }, 50)
     }
 
-    const guardarFirma = () => {
+    const guardarFirma = async () => {
         if (sigCanvas.current.isEmpty()) {
             return
         }
@@ -31,15 +31,25 @@ export default function StepFirma({ data, onUpdate, riskResult, formData }) {
         const firmaBase64 = sigCanvas.current.getTrimmedCanvas().toDataURL('image/png')
 
         // Capturar metadata de validez legal
-        const metadata = {
+        let metadata = {
             dispositivo: navigator.userAgent,
             plataforma: navigator.platform,
             resolucion: `${window.screen.width}x${window.screen.height}`,
             userAgent: navigator.userAgent,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            ip: 'No detectada'
         }
 
-        // Intentar obtener ubicación geográfica
+        // 1. Intentar obtener IP
+        try {
+            const ipRes = await fetch('https://api.ipify.org?format=json')
+            const ipData = await ipRes.json()
+            metadata.ip = ipData.ip
+        } catch (e) {
+            console.warn('IP detection failed:', e)
+        }
+
+        // 2. Intentar obtener ubicación geográfica
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
