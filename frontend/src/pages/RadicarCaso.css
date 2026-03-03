@@ -331,3 +331,40 @@
         flex-direction: column;
     }
 }
+
+/* Mic Button Animations */
+.mic-pulse {
+    width: 6px;
+    height: 6px;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #DC2626;
+    border-radius: 50%;
+    animation: mic-pulse 1.5s infinite;
+    z-index: 1;
+}
+
+@keyframes mic-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(220, 38, 38, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+    }
+}
+
+.mic-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.mic-btn.listening {
+    border-color: #DC2626 !important;
+}

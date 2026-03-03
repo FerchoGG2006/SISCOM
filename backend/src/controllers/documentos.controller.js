@@ -49,8 +49,27 @@ class DocumentoController {
                 case 'medidas-proteccion':
                     result = await pdfGenerator.generarMedidasProteccion(expediente, victimaParaPDF, agresorParaPDF, null, usuario);
                     break;
+                case 'auto-inicio':
+                    result = await pdfGenerator.generarAutoInicio(expediente, victimaParaPDF, agresorParaPDF, usuario);
+                    break;
                 default:
                     return res.status(400).json({ success: false, message: 'Tipo de documento no válido' });
+            }
+
+            // Subir a Google Drive si ya tiene carpeta
+            let driveFileId = null;
+            if (expediente.drive_folder_id && expediente.drive_folder_id !== 'PENDING') {
+                try {
+                    const driveRes = await driveService.uploadFile(
+                        expediente.drive_folder_id,
+                        result.filePath,
+                        result.fileName,
+                        'application/pdf'
+                    );
+                    driveFileId = driveRes.id;
+                } catch (driveErr) {
+                    logger.error('Error subiendo a Drive desde controlador:', driveErr);
+                }
             }
 
             // Registrar en la base de datos
@@ -59,7 +78,7 @@ class DocumentoController {
                     id_expediente: expediente.id,
                     nombre: result.fileName,
                     tipo: tipo.replace('-', ' '),
-                    url_drive: expediente.drive_folder_id
+                    url_drive: driveFileId || expediente.drive_folder_id
                 }
             });
 

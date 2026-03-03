@@ -15,7 +15,11 @@ import {
   User,
   AlertTriangle,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2,
+  FileDown,
+  RefreshCw,
+  ExternalLink
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -242,6 +246,67 @@ const ActionBtn = styled(Link)`
   }
 `;
 
+const DropdownContainer = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+const DropdownMenu = styled(motion.div)`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 0 1px rgba(0,0,0,0.1);
+  border: 1px solid var(--gray-100);
+  width: 200px;
+  z-index: 1000;
+  overflow: hidden;
+  padding: 0.5rem;
+`;
+
+const DropdownItem = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--gray-700);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+
+  &:hover {
+    background: var(--gray-50);
+    color: var(--primary);
+  }
+
+  &.danger {
+    color: var(--danger);
+    &:hover {
+      background: #FEF2F2;
+    }
+  }
+
+  svg {
+    opacity: 0.6;
+  }
+`;
+
+const Overlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: transparent;
+  z-index: 999;
+`;
+
 // Helper for status/risk badges
 const getStatusConfig = (status) => {
   const s = status?.toLowerCase();
@@ -265,6 +330,8 @@ export default function Expedientes() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [riskFilter, setRiskFilter] = useState('');
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -315,6 +382,32 @@ export default function Expedientes() {
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAction = async (actionType, id) => {
+    setActiveMenu(null);
+    setProcessing(true);
+    try {
+      if (actionType === 'sync') {
+        await api.post(`/expedientes/${id}/sync-drive`);
+        alert('Sincronización con Google Drive completada.');
+      } else if (actionType === 'close') {
+        if (window.confirm('¿Está seguro de cerrar este caso por completo?')) {
+          await api.patch(`/expedientes/${id}/estado`, { estado: 'Cerrado' });
+          fetchData();
+        }
+      } else if (actionType === 'pdf') {
+        const res = await api.post(`/expedientes/${id}/documentos/auto-inicio`);
+        if (res.data.success) {
+          alert('Auto de Inicio generado correctamente en el sistema y Drive.');
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Error al ejecutar la acción.');
+    } finally {
+      setProcessing(false);
     }
   };
 
@@ -431,9 +524,42 @@ export default function Expedientes() {
                         <ActionBtn to={`/expedientes/${exp.id}`}>
                           <Eye size={20} />
                         </ActionBtn>
-                        <ActionBtn to="#">
-                          <MoreVertical size={20} />
-                        </ActionBtn>
+
+                        <DropdownContainer>
+                          <ActionBtn as="button" onClick={() => setActiveMenu(activeMenu === exp.id ? null : exp.id)}>
+                            <MoreVertical size={20} />
+                          </ActionBtn>
+
+                          <AnimatePresence>
+                            {activeMenu === exp.id && (
+                              <>
+                                <Overlay onClick={() => setActiveMenu(null)} />
+                                <DropdownMenu
+                                  initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                >
+                                  <DropdownItem as={Link} to={`/expedientes/${exp.id}`}>
+                                    <ExternalLink size={16} /> Ver Detalles
+                                  </DropdownItem>
+                                  <DropdownItem onClick={() => handleAction('pdf', exp.id)}>
+                                    <FileDown size={16} /> Generar Auto Inicio
+                                  </DropdownItem>
+                                  <DropdownItem onClick={() => handleAction('sync', exp.id)}>
+                                    <RefreshCw size={16} /> Sincronizar Drive
+                                  </DropdownItem>
+                                  <DropdownItem
+                                    className="danger"
+                                    onClick={() => handleAction('close', exp.id)}
+                                    disabled={exp.estado === 'Cerrado'}
+                                  >
+                                    <CheckCircle2 size={16} /> Cerrar Expediente
+                                  </DropdownItem>
+                                </DropdownMenu>
+                              </>
+                            )}
+                          </AnimatePresence>
+                        </DropdownContainer>
                       </div>
                     </td>
                   </motion.tr>

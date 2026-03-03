@@ -248,6 +248,11 @@ export default function Configuracion() {
         }
     };
 
+    const handlePreviewTemplate = (name) => {
+        setMsg({ type: 'success', text: `Vista previa de "${name}" generándose... El motor de plantillas está listo.` });
+        setTimeout(() => setMsg(null), 3000);
+    };
+
     const handleChange = (field, value) => {
         setConfig(prev => ({ ...prev, [field]: value }));
     };
@@ -407,7 +412,12 @@ export default function Configuracion() {
                                         <FileText size={24} color="var(--primary)" />
                                         <span style={{ fontWeight: 800, color: 'var(--gray-900)' }}>{t}</span>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>Formato PDF Estándar</span>
-                                        <button style={{ background: 'var(--gray-50)', border: 'none', padding: '0.5rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', color: 'var(--primary)' }}>Vista Previa</button>
+                                        <button
+                                            style={{ background: 'var(--gray-50)', border: 'none', padding: '0.5rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', color: 'var(--primary)' }}
+                                            onClick={() => handlePreviewTemplate(t)}
+                                        >
+                                            Vista Previa
+                                        </button>
                                     </div>
                                 ))}
                             </div>

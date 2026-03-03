@@ -1,4 +1,5 @@
-import { FileText } from 'lucide-react'
+import React, { useState, useCallback, useEffect } from 'react'
+import { FileText, Mic, MicOff, Loader2 } from 'lucide-react'
 import AIAdvisor from '../ai/AIAdvisor'
 
 const TIPOS_CASO = [
@@ -21,10 +22,67 @@ const SUBTIPOS = [
 ]
 
 export default function StepHechos({ data, onUpdate }) {
+    const [isListening, setIsListening] = useState(false);
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
         onUpdate({ [name]: type === 'checkbox' ? checked : value })
     }
+
+    const toggleListening = useCallback(() => {
+        if (isListening) {
+            stopListening();
+        } else {
+            startListening();
+        }
+    }, [isListening]);
+
+    const startListening = () => {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('Su navegador no soporta el dictado por voz. Intente con Google Chrome.');
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'es-AR';
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.onstart = () => {
+            setIsListening(true);
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+                .map(result => result[0])
+                .map(result => result.transcript)
+                .join('');
+
+            const currentText = data.descripcion_hechos || '';
+            const newText = currentText ? `${currentText} ${transcript}` : transcript;
+            onUpdate({ descripcion_hechos: newText });
+        };
+
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            setIsListening(false);
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+        };
+
+        window._recognition = recognition;
+        recognition.start();
+    };
+
+    const stopListening = () => {
+        if (window._recognition) {
+            window._recognition.stop();
+            setIsListening(false);
+        }
+    };
 
     const handleSubtipoChange = (e) => {
         const { value, checked } = e.target
@@ -142,8 +200,43 @@ export default function StepHechos({ data, onUpdate }) {
                     />
                 </div>
 
-                <div className="form-group">
-                    <label className="form-label required">Descripción de los Hechos</label>
+                <div className="form-group" style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <label className="form-label required" style={{ margin: 0 }}>Descripción de los Hechos</label>
+                        <button
+                            type="button"
+                            onClick={toggleListening}
+                            className={`mic-btn ${isListening ? 'listening' : ''}`}
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                padding: '6px 12px',
+                                borderRadius: '12px',
+                                border: '1px solid var(--gray-200)',
+                                background: isListening ? '#FEE2E2' : 'white',
+                                color: isListening ? '#DC2626' : 'var(--primary)',
+                                fontWeight: 700,
+                                fontSize: '0.8rem',
+                                cursor: 'pointer',
+                                transition: 'all 0.3s ease',
+                                boxShadow: isListening ? '0 0 10px rgba(220, 38, 38, 0.2)' : 'none'
+                            }}
+                        >
+                            {isListening ? (
+                                <>
+                                    <div className="mic-pulse" />
+                                    <MicOff size={16} />
+                                    Grabando...
+                                </>
+                            ) : (
+                                <>
+                                    <Mic size={16} />
+                                    Dictar con Voz
+                                </>
+                            )}
+                        </button>
+                    </div>
                     <textarea
                         name="descripcion_hechos"
                         className="form-textarea"

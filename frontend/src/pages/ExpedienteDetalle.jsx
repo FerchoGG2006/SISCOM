@@ -376,6 +376,24 @@ export default function ExpedienteDetalle() {
     }
   };
 
+  const handleSaveActuacion = async () => {
+    if (!newActuacion.descripcion.trim()) return;
+    setGenerating(true);
+    try {
+      await api.post(`/expedientes/${id}/actuaciones`, {
+        tipo: newActuacion.tipo,
+        descripcion: newActuacion.descripcion
+      });
+      setNewActuacion({ tipo: 'Seguimiento', descripcion: '' });
+      setShowModal(false);
+      loadData();
+    } catch (e) {
+      alert('Error al guardar actuación');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const handleAction = async (type) => {
     setGenerating(true);
     try {
@@ -573,11 +591,10 @@ export default function ExpedienteDetalle() {
               />
             </div>
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-              <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
-              <button className="btn btn-primary" onClick={() => {
-                // Add logic
-                setShowModal(false);
-              }}>Guardar</button>
+              <button className="btn btn-secondary" onClick={() => setShowModal(false)} disabled={generating}>Cancelar</button>
+              <button className="btn btn-primary" onClick={handleSaveActuacion} disabled={generating}>
+                {generating ? 'Guardando...' : 'Guardar'}
+              </button>
             </div>
           </Card>
         </div>

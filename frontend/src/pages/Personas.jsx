@@ -88,10 +88,17 @@ export default function Personas() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [roleFilter, setRoleFilter] = useState('all')
+    const [selectedPersona, setSelectedPersona] = useState(null)
+    const [showModal, setShowModal] = useState(false)
 
     useEffect(() => {
         loadPersonas()
     }, [roleFilter])
+
+    const handleViewPersona = (persona) => {
+        setSelectedPersona(persona);
+        setShowModal(true);
+    };
 
     const loadPersonas = async () => {
         try {
@@ -214,7 +221,11 @@ export default function Personas() {
                                             <div style={{ fontWeight: 800, color: 'var(--danger)' }}>{persona._count.expedientesAgresor} casos</div>
                                         </div>
                                     </div>
-                                    <button className="btn-premium" style={{ padding: '0.5rem' }}>
+                                    <button
+                                        className="btn-premium"
+                                        style={{ padding: '0.5rem' }}
+                                        onClick={() => handleViewPersona(persona)}
+                                    >
                                         <Eye size={18} />
                                     </button>
                                 </div>
@@ -223,6 +234,60 @@ export default function Personas() {
                     </AnimatePresence>
                 </PersonasGrid>
             )}
+
+            <AnimatePresence>
+                {showModal && selectedPersona && (
+                    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '1rem' }}>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            style={{ background: 'white', borderRadius: '24px', padding: '2rem', maxWidth: '500px', width: '100%', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}
+                        >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                                <h2 style={{ margin: 0 }}>Detalle de Persona</h2>
+                                <button onClick={() => setShowModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--gray-400)' }}>Cerrar</button>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '2rem' }}>
+                                <Avatar role={selectedPersona.es_victima ? 'victima' : 'agresor'}>
+                                    {selectedPersona.primer_nombre[0]}
+                                </Avatar>
+                                <div>
+                                    <h3 style={{ margin: 0 }}>{selectedPersona.primer_nombre} {selectedPersona.primer_apellido}</h3>
+                                    <RoleBadge type={selectedPersona.es_victima ? 'victima' : 'agresor'}>
+                                        {selectedPersona.es_victima ? 'Víctima' : 'Agresor'}
+                                    </RoleBadge>
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <DetailRow>
+                                    <Shield size={16} />
+                                    <span>{selectedPersona.tipo_documento} {selectedPersona.numero_documento}</span>
+                                </DetailRow>
+                                <DetailRow>
+                                    <Phone size={16} />
+                                    <span>{selectedPersona.telefono_celular || 'Sin teléfono'}</span>
+                                </DetailRow>
+                                <DetailRow>
+                                    <MapPin size={16} />
+                                    <span>{selectedPersona.direccion || 'Sin dirección'}</span>
+                                </DetailRow>
+                            </div>
+
+                            <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end' }}>
+                                <button
+                                    className="btn-premium btn-premium-primary"
+                                    onClick={() => setShowModal(false)}
+                                >
+                                    Aceptar
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </PageContainer>
-    )
+    );
 }
