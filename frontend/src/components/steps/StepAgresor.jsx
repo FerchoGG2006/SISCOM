@@ -289,44 +289,70 @@ export default function StepAgresor({ data, onUpdate }) {
             <div className="form-section">
                 <h3 className="form-section-title">Información Relevante</h3>
 
-                <div className="form-row">
-                    <div className="form-group">
-                        <label className="checkbox-label">
-                            <input
-                                type="checkbox"
-                                name="convivencia_actual"
-                                checked={data.convivencia_actual || false}
-                                onChange={handleChange}
-                            />
-                            <span>¿Convive actualmente con la víctima?</span>
-                        </label>
-                    </div>
-
-                    <div className="form-group">
-                        <label className="checkbox-label">
-                            <input
-                                type="checkbox"
-                                name="consumo_sustancias"
-                                checked={data.consumo_sustancias || false}
-                                onChange={handleChange}
-                            />
-                            <span>¿Consumo de alcohol o sustancias?</span>
-                        </label>
-                    </div>
-
-                    <div className="form-group">
-                        <label className="checkbox-label">
-                            <input
-                                type="checkbox"
-                                name="antecedentes_violencia"
-                                checked={data.antecedentes_violencia || false}
-                                onChange={handleChange}
-                            />
-                            <span>¿Antecedentes de violencia conocidos?</span>
-                        </label>
-                    </div>
+                <div className="form-row" style={{ alignItems: 'flex-start' }}>
+                    <BooleanToggle
+                        label="¿Convive con la víctima?"
+                        value={data.convivencia_actual}
+                        onChange={(val) => onUpdate({ convivencia_actual: val })}
+                    />
+                    <BooleanToggle
+                        label="¿Consumo de sustancias?"
+                        value={data.consumo_sustancias}
+                        onChange={(val) => onUpdate({ consumo_sustancias: val })}
+                    />
+                    <BooleanToggle
+                        label="¿Antecedentes de violencia?"
+                        value={data.antecedentes_violencia}
+                        onChange={(val) => onUpdate({ antecedentes_violencia: val })}
+                    />
                 </div>
             </div>
         </div>
     )
 }
+
+const BooleanToggle = ({ label, value, onChange }) => (
+    <div className="form-group" style={{ flex: 1 }}>
+        <label className="form-label" style={{ marginBottom: '10px', display: 'block' }}>{label}</label>
+        <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+                type="button"
+                onClick={() => onChange(true)}
+                style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '10px',
+                    border: '2px solid',
+                    borderColor: value === true ? '#10B981' : '#e5e7eb',
+                    background: value === true ? '#10B981' : 'white',
+                    color: value === true ? 'white' : '#10B981aa',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '0.75rem'
+                }}
+            >
+                SÍ
+            </button>
+            <button
+                type="button"
+                onClick={() => onChange(false)}
+                style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '10px',
+                    border: '2px solid',
+                    borderColor: value === false ? '#EF4444' : '#e5e7eb',
+                    background: value === false ? '#EF4444' : 'white',
+                    color: value === false ? 'white' : '#EF4444aa',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '0.75rem'
+                }}
+            >
+                NO
+            </button>
+        </div>
+    </div>
+)

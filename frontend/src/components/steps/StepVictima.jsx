@@ -392,20 +392,59 @@ export default function StepVictima({ data, onUpdate }) {
                         />
                     </div>
 
-                    <div className="form-group">
-                        <label className="form-label">&nbsp;</label>
-                        <label className="checkbox-label">
-                            <input
-                                type="checkbox"
-                                name="mujer_gestante"
-                                checked={data.mujer_gestante || false}
-                                onChange={handleChange}
-                            />
-                            <span>¿Está en embarazo?</span>
-                        </label>
-                    </div>
+                    <BooleanToggle
+                        label="¿Está en embarazo?"
+                        value={data.mujer_gestante}
+                        onChange={(val) => onUpdate({ mujer_gestante: val })}
+                    />
                 </div>
             </div>
         </div>
     )
 }
+
+const BooleanToggle = ({ label, value, onChange }) => (
+    <div className="form-group" style={{ flex: 1 }}>
+        <label className="form-label" style={{ marginBottom: '10px', display: 'block' }}>{label}</label>
+        <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+                type="button"
+                onClick={() => onChange(true)}
+                style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '10px',
+                    border: '2px solid',
+                    borderColor: value === true ? '#10B981' : '#e5e7eb',
+                    background: value === true ? '#10B981' : 'white',
+                    color: value === true ? 'white' : '#10B981aa',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '0.75rem'
+                }}
+            >
+                SÍ
+            </button>
+            <button
+                type="button"
+                onClick={() => onChange(false)}
+                style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '10px',
+                    border: '2px solid',
+                    borderColor: value === false ? '#EF4444' : '#e5e7eb',
+                    background: value === false ? '#EF4444' : 'white',
+                    color: value === false ? 'white' : '#EF4444aa',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '0.75rem'
+                }}
+            >
+                NO
+            </button>
+        </div>
+    </div>
+)

@@ -144,18 +144,25 @@ export default function StepHechos({ data, onUpdate }) {
                 </div>
 
                 <div className="form-group">
-                    <label className="form-label">Tipo(s) de Violencia</label>
-                    <div className="checkbox-grid">
+                    <label className="form-label" style={{ marginBottom: '15px' }}>Tipo(s) de Violencia</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '15px' }}>
                         {SUBTIPOS.map(s => (
-                            <label key={s.value} className="checkbox-label">
-                                <input
-                                    type="checkbox"
-                                    value={s.value}
-                                    checked={isSubtipoChecked(s.value)}
-                                    onChange={handleSubtipoChange}
+                            <div key={s.value} style={{ background: 'var(--gray-50)', padding: '12px', borderRadius: '15px', border: '1px solid var(--gray-100)' }}>
+                                <BooleanToggle
+                                    label={s.label}
+                                    value={isSubtipoChecked(s.value)}
+                                    onChange={(val) => {
+                                        const current = data.subtipo_violencia ? data.subtipo_violencia.split(',') : []
+                                        if (val) {
+                                            if (!current.includes(s.value)) current.push(s.value)
+                                        } else {
+                                            const index = current.indexOf(s.value)
+                                            if (index > -1) current.splice(index, 1)
+                                        }
+                                        onUpdate({ subtipo_violencia: current.join(',') })
+                                    }}
                                 />
-                                <span>{s.label}</span>
-                            </label>
+                            </div>
                         ))}
                     </div>
                 </div>
@@ -200,9 +207,16 @@ export default function StepHechos({ data, onUpdate }) {
                     />
                 </div>
 
-                <div className="form-group" style={{ position: 'relative' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                        <label className="form-label required" style={{ margin: 0 }}>Descripción de los Hechos</label>
+                <div className="form-group" style={{ position: 'relative', marginTop: '35px' }}>
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '15px'
+                    }}>
+                        <label className="form-label required" style={{ margin: 0, fontWeight: 700 }}>
+                            Descripción de los Hechos
+                        </label>
                         <button
                             type="button"
                             onClick={toggleListening}
@@ -210,28 +224,32 @@ export default function StepHechos({ data, onUpdate }) {
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '8px',
-                                padding: '6px 12px',
-                                borderRadius: '12px',
-                                border: '1px solid var(--gray-200)',
+                                gap: '10px',
+                                padding: '10px 18px',
+                                borderRadius: '100px',
+                                border: '2px solid',
+                                borderColor: isListening ? '#DC2626' : 'var(--primary)',
                                 background: isListening ? '#FEE2E2' : 'white',
                                 color: isListening ? '#DC2626' : 'var(--primary)',
                                 fontWeight: 700,
-                                fontSize: '0.8rem',
+                                fontSize: '0.85rem',
                                 cursor: 'pointer',
-                                transition: 'all 0.3s ease',
-                                boxShadow: isListening ? '0 0 10px rgba(220, 38, 38, 0.2)' : 'none'
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                boxShadow: isListening
+                                    ? '0 4px 12px rgba(220, 38, 38, 0.2)'
+                                    : '0 2px 8px rgba(0,0,0,0.05)',
+                                transform: isListening ? 'scale(1.05)' : 'scale(1)'
                             }}
                         >
                             {isListening ? (
                                 <>
-                                    <div className="mic-pulse" />
-                                    <MicOff size={16} />
-                                    Grabando...
+                                    <div className="mic-pulse" style={{ width: '8px', height: '8px', background: '#DC2626', borderRadius: '50%', animation: 'pulse 1.5s infinite' }} />
+                                    <MicOff size={18} />
+                                    Detener
                                 </>
                             ) : (
                                 <>
-                                    <Mic size={16} />
+                                    <Mic size={18} />
                                     Dictar con Voz
                                 </>
                             )}
@@ -252,42 +270,22 @@ export default function StepHechos({ data, onUpdate }) {
             <div className="form-section">
                 <h3 className="form-section-title">Información Adicional</h3>
 
-                <div className="form-row">
-                    <div className="form-group">
-                        <label className="checkbox-label">
-                            <input
-                                type="checkbox"
-                                name="armas_involucradas"
-                                checked={data.armas_involucradas || false}
-                                onChange={handleChange}
-                            />
-                            <span>¿Hubo armas involucradas?</span>
-                        </label>
-                    </div>
-
-                    <div className="form-group">
-                        <label className="checkbox-label">
-                            <input
-                                type="checkbox"
-                                name="lesiones_visibles"
-                                checked={data.lesiones_visibles || false}
-                                onChange={handleChange}
-                            />
-                            <span>¿Hay lesiones visibles?</span>
-                        </label>
-                    </div>
-
-                    <div className="form-group">
-                        <label className="checkbox-label">
-                            <input
-                                type="checkbox"
-                                name="requiere_atencion_medica"
-                                checked={data.requiere_atencion_medica || false}
-                                onChange={handleChange}
-                            />
-                            <span>¿Requiere atención médica?</span>
-                        </label>
-                    </div>
+                <div className="form-row" style={{ alignItems: 'flex-start', marginTop: '10px' }}>
+                    <BooleanToggle
+                        label="¿Hubo armas?"
+                        value={data.armas_involucradas}
+                        onChange={(val) => onUpdate({ armas_involucradas: val })}
+                    />
+                    <BooleanToggle
+                        label="¿Hay lesiones?"
+                        value={data.lesiones_visibles}
+                        onChange={(val) => onUpdate({ lesiones_visibles: val })}
+                    />
+                    <BooleanToggle
+                        label="¿Requiere atención?"
+                        value={data.requiere_atencion_medica}
+                        onChange={(val) => onUpdate({ requiere_atencion_medica: val })}
+                    />
                 </div>
 
                 {data.armas_involucradas && (
@@ -321,3 +319,49 @@ export default function StepHechos({ data, onUpdate }) {
         </div>
     )
 }
+
+const BooleanToggle = ({ label, value, onChange }) => (
+    <div className="form-group" style={{ flex: 1 }}>
+        <label className="form-label" style={{ marginBottom: '10px', display: 'block' }}>{label}</label>
+        <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+                type="button"
+                onClick={() => onChange(true)}
+                style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '10px',
+                    border: '2px solid',
+                    borderColor: value === true ? '#10B981' : '#e5e7eb',
+                    background: value === true ? '#10B981' : 'white',
+                    color: value === true ? 'white' : '#10B981aa',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '0.75rem'
+                }}
+            >
+                SÍ
+            </button>
+            <button
+                type="button"
+                onClick={() => onChange(false)}
+                style={{
+                    flex: 1,
+                    padding: '8px',
+                    borderRadius: '10px',
+                    border: '2px solid',
+                    borderColor: value === false ? '#EF4444' : '#e5e7eb',
+                    background: value === false ? '#EF4444' : 'white',
+                    color: value === false ? 'white' : '#EF4444aa',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    fontSize: '0.75rem'
+                }}
+            >
+                NO
+            </button>
+        </div>
+    </div>
+)

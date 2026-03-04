@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Shield, AlertTriangle, CheckCircle } from 'lucide-react'
 import { motion } from 'framer-motion'
+import RiskThermometer from '../common/RiskThermometer'
 import './StepValoracion.css'
 
 // 52 preguntas del instrumento técnico del Ministerio de Justicia
@@ -13,7 +14,7 @@ const PREGUNTAS = {
             { id: 'item_01', texto: '¿La insulta, humilla o menosprecia?' },
             { id: 'item_02', texto: '¿Le grita o usa un tono amenazante?' },
             { id: 'item_03', texto: '¿Hace críticas constantes a su apariencia, forma de ser o actuar?' },
-            { id: 'item_04', texto: '¿La intimida con gestos, miradas o gritos?' },
+            { id: 'item_04', texto: '¿La intimidida con gestos, miradas o gritos?' },
             { id: 'item_05', texto: '¿La aísla de su familia y/o amigos?' },
             { id: 'item_06', texto: '¿Tiene celos excesivos o la acusa de infidelidad?' },
             { id: 'item_07', texto: '¿Controla sus movimientos, actividades o relaciones sociales?' },
@@ -108,37 +109,6 @@ const PREGUNTAS = {
     }
 }
 
-const RiskThermometer = ({ score, level }) => {
-    const maxScore = 150
-    const percentage = Math.min((score / maxScore) * 100, 100)
-
-    const colors = {
-        bajo: '#10B981',
-        medio: '#F59E0B',
-        alto: '#F97316',
-        extremo: '#EF4444'
-    }
-
-    const currentColor = colors[level?.toLowerCase()] || '#64748B'
-
-    return (
-        <div className="risk-thermometer-container" style={{ flex: 1, padding: '0 20px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>
-                <span style={{ color: 'var(--gray-500)' }}>Intensidad de Riesgo</span>
-                <span style={{ color: currentColor }}>{level?.toUpperCase() || 'CALCULANDO...'}</span>
-            </div>
-            <div className="thermometer-track" style={{ height: '12px', background: 'var(--gray-100)', borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
-                <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${percentage}%` }}
-                    transition={{ type: 'spring', stiffness: 50 }}
-                    style={{ height: '100%', background: currentColor, borderRadius: '10px' }}
-                />
-            </div>
-        </div>
-    )
-}
-
 export default function StepValoracion({ data, onUpdate, onCalculate, riskResult }) {
     const [localData, setLocalData] = useState(data || {})
     const [activeSection, setActiveSection] = useState('seccion1')
@@ -165,7 +135,7 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
             alto: '#F97316',
             extremo: '#EF4444'
         }
-        return colors[nivel] || '#64748B'
+        return colors[nivel?.toLowerCase()] || '#64748B'
     }
 
     const countAnswered = (seccion) => {
@@ -290,4 +260,3 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
         </div>
     )
 }
-

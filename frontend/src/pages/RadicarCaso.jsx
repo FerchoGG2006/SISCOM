@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../services/api'
 import StepVictima from '../components/steps/StepVictima'
@@ -7,6 +7,7 @@ import StepHechos from '../components/steps/StepHechos'
 import StepValoracion from '../components/steps/StepValoracion'
 import StepFirma from '../components/steps/StepFirma'
 import StepEvidencia from '../components/steps/StepEvidencia'
+import RiskThermometer from '../components/common/RiskThermometer'
 import {
     User,
     UserX,
@@ -18,7 +19,8 @@ import {
     ArrowRight,
     AlertTriangle,
     Loader,
-    Camera
+    Camera,
+    Activity
 } from 'lucide-react'
 import './RadicarCaso.css'
 
@@ -48,12 +50,55 @@ export default function RadicarCaso() {
 
     const navigate = useNavigate()
 
-    const updateFormData = (section, data) => {
-        setFormData(prev => ({
-            ...prev,
-            [section]: { ...prev[section], ...data }
-        }))
-    }
+    // Sync risk data when relevant fields change
+    useEffect(() => {
+        const syncRiskData = () => {
+            const updates = {};
+
+            // Victima mapping
+            if (formData.victima?.mujer_gestante !== undefined) {
+                updates.item_44 = formData.victima.mujer_gestante;
+            }
+
+            // Agresor mapping
+            if (formData.agresor?.antecedentes_violencia !== undefined) {
+                updates.item_36 = formData.agresor.antecedentes_violencia;
+            }
+            if (formData.agresor?.consumo_sustancias !== undefined) {
+                updates.item_39 = formData.agresor.consumo_sustancias;
+            }
+
+            // Hechos mapping
+            if (formData.datosHecho?.lesiones_visibles !== undefined) {
+                updates.item_23 = formData.datosHecho.lesiones_visibles;
+            }
+            if (formData.datosHecho?.armas_involucradas !== undefined) {
+                updates.item_40 = formData.datosHecho.armas_involucradas;
+            }
+
+            if (Object.keys(updates).length > 0) {
+                const hasChanges = Object.keys(updates).some(key =>
+                    formData.valoracionRiesgo[key] !== updates[key]
+                );
+
+                if (hasChanges) {
+                    setFormData(prev => ({
+                        ...prev,
+                        valoracionRiesgo: { ...prev.valoracionRiesgo, ...updates }
+                    }));
+                }
+            }
+        };
+
+        syncRiskData();
+    }, [formData.victima, formData.agresor, formData.datosHecho]);
+
+    // Recalculate risk automatically
+    useEffect(() => {
+        if (Object.keys(formData.valoracionRiesgo).length > 0) {
+            calculateRisk(formData.valoracionRiesgo);
+        }
+    }, [formData.valoracionRiesgo]);
 
     const calculateRisk = async (answers) => {
         try {
@@ -63,6 +108,13 @@ export default function RadicarCaso() {
         } catch (error) {
             console.error('Error calculando riesgo:', error)
         }
+    }
+
+    const updateFormData = (section, data) => {
+        setFormData(prev => ({
+            ...prev,
+            [section]: { ...prev[section], ...data }
+        }))
     }
 
     const nextStep = () => {
@@ -82,7 +134,6 @@ export default function RadicarCaso() {
         setError('')
 
         try {
-            // Transform answers object to ordered array for backend
             const riskAnswers = Array.from({ length: 52 }, (_, i) => {
                 const key = `item_${String(i + 1).padStart(2, '0')}`
                 return formData.valoracionRiesgo[key] || false
@@ -94,13 +145,11 @@ export default function RadicarCaso() {
                 datosHecho: formData.datosHecho,
                 evidencias: formData.evidencias,
                 respuestas_riesgo: riskAnswers,
-                firma: formData.firma?.firma, // Base64 string
+                firma: formData.firma?.firma,
                 metadata_biometrica: formData.firma?.metadata_biometrica,
-                usuario_id: 1 // Default user for MVP
+                usuario_id: 1
             }
 
-
-            // Post to new endpoint (client baseURL includes /api/v1)
             const response = await api.post('/radicar', payload)
 
             if (response.data.success) {
@@ -113,7 +162,6 @@ export default function RadicarCaso() {
                     alertas: []
                 })
             }
-
         } catch (err) {
             console.error('Error radicando:', err)
             setError(err.response?.data?.message || 'Error al radicar el caso')
@@ -124,54 +172,13 @@ export default function RadicarCaso() {
 
     const renderStep = () => {
         switch (currentStep) {
-            case 1:
-                return (
-                    <StepVictima
-                        data={formData.victima}
-                        onUpdate={(data) => updateFormData('victima', data)}
-                    />
-                )
-            case 2:
-                return (
-                    <StepAgresor
-                        data={formData.agresor}
-                        onUpdate={(data) => updateFormData('agresor', data)}
-                    />
-                )
-            case 3:
-                return (
-                    <StepHechos
-                        data={formData.datosHecho}
-                        onUpdate={(data) => updateFormData('datosHecho', data)}
-                    />
-                )
-            case 4:
-                return (
-                    <StepEvidencia
-                        data={formData}
-                        onUpdate={(data) => updateFormData('evidencias', data.evidencias)}
-                    />
-                )
-            case 5:
-                return (
-                    <StepValoracion
-                        data={formData.valoracionRiesgo}
-                        onUpdate={(data) => updateFormData('valoracionRiesgo', data)}
-                        onCalculate={calculateRisk}
-                        riskResult={riskResult}
-                    />
-                )
-            case 6:
-                return (
-                    <StepFirma
-                        data={formData.firma}
-                        onUpdate={(data) => updateFormData('firma', data)}
-                        riskResult={riskResult}
-                        formData={formData}
-                    />
-                )
-            default:
-                return null
+            case 1: return <StepVictima data={formData.victima} onUpdate={(data) => updateFormData('victima', data)} />
+            case 2: return <StepAgresor data={formData.agresor} onUpdate={(data) => updateFormData('agresor', data)} />
+            case 3: return <StepHechos data={formData.datosHecho} onUpdate={(data) => updateFormData('datosHecho', data)} />
+            case 4: return <StepEvidencia data={formData} onUpdate={(data) => updateFormData('evidencias', data.evidencias)} />
+            case 5: return <StepValoracion data={formData.valoracionRiesgo} onUpdate={(data) => updateFormData('valoracionRiesgo', data)} onCalculate={calculateRisk} riskResult={riskResult} />
+            case 6: return <StepFirma data={formData.firma} onUpdate={(data) => updateFormData('firma', data)} riskResult={riskResult} formData={formData} />
+            default: return null
         }
     }
 
@@ -179,67 +186,27 @@ export default function RadicarCaso() {
         return (
             <div className="radicar-success">
                 <div className="success-card glass-card">
-                    <div className="success-icon">
-                        <Check size={48} />
-                    </div>
+                    <div className="success-icon"><Check size={48} /></div>
                     <h2>¡Caso Radicado Exitosamente!</h2>
                     <p className="radicado-number">{success.radicado}</p>
-
                     <div className="success-details">
                         <div className="detail-item">
                             <span className="label">Nivel de Riesgo:</span>
-                            <span className={`badge-risk ${success.nivelRiesgo}`}>
-                                {success.nivelRiesgo.toUpperCase()}
-                            </span>
+                            <span className={`badge-risk ${success.nivelRiesgo}`}>{success.nivelRiesgo.toUpperCase()}</span>
                         </div>
                         <div className="detail-item">
                             <span className="label">Puntaje:</span>
                             <span className="value">{success.puntajeRiesgo} puntos</span>
                         </div>
                     </div>
-
-                    {success.alertas?.length > 0 && (
-                        <div className="success-alerts">
-                            <h4><AlertTriangle size={18} /> Alertas Críticas</h4>
-                            <ul>
-                                {success.alertas.map((alerta, i) => (
-                                    <li key={i}>{alerta.mensaje}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
                     <div className="success-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%' }}>
-                            <button
-                                className="btn-premium btn-premium-primary"
-                                onClick={() => navigate(`/expedientes/${success.expedienteId}`)}
-                            >
-                                Ver Expediente
-                            </button>
-                            <button
-                                className="btn-premium"
-                                style={{ background: 'var(--gray-100)', color: 'var(--text-main)', border: '1px solid var(--gray-200)' }}
-                                onClick={() => window.location.reload()}
-                            >
-                                Radicar Otro
-                            </button>
+                            <button className="btn-premium btn-premium-primary" onClick={() => navigate(`/expedientes/${success.expedienteId}`)}>Ver Expediente</button>
+                            <button className="btn-premium" style={{ background: 'var(--gray-100)', color: 'var(--text-main)', border: '1px solid var(--gray-200)' }} onClick={() => window.location.reload()}>Radicar Otro</button>
                         </div>
-
                         {success.pdfUrl && (
-                            <button
-                                className="btn-premium"
-                                style={{
-                                    background: 'var(--primary-light)',
-                                    color: 'var(--primary)',
-                                    border: '1px solid var(--primary)',
-                                    width: '100%',
-                                    fontWeight: 700
-                                }}
-                                onClick={() => window.open(success.pdfUrl, '_blank')}
-                            >
-                                <FileText size={18} style={{ marginRight: '8px' }} />
-                                Descargar Auto de Inicio (PDF)
+                            <button className="btn-premium" style={{ background: 'var(--primary-light)', color: 'var(--primary)', border: '1px solid var(--primary)', width: '100%', fontWeight: 700 }} onClick={() => window.open(success.pdfUrl, '_blank')}>
+                                <FileText size={18} style={{ marginRight: '8px' }} /> Descargar Auto de Inicio (PDF)
                             </button>
                         )}
                     </div>
@@ -250,86 +217,63 @@ export default function RadicarCaso() {
 
     return (
         <div className="radicar-caso">
-            <div className="radicar-header">
-                <h1>Radicar Nuevo Caso</h1>
-                <p>Complete el formulario de recepción para radicar un nuevo caso</p>
+            <div className="radicar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '40px' }}>
+                <div style={{ flex: 1 }}>
+                    <h1>Radicar Nuevo Caso</h1>
+                    <p>Complete el formulario de recepción para radicar un nuevo caso</p>
+                </div>
+
+                <div style={{
+                    flex: '0 0 350px',
+                    background: 'white',
+                    padding: '15px 20px',
+                    borderRadius: '20px',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.05)',
+                    border: '1px solid var(--gray-100)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <Activity size={18} color="var(--primary)" />
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--gray-700)' }}>Monitoreo de Severidad (En Vivo)</span>
+                    </div>
+                    <RiskThermometer score={riskResult?.puntajeTotal || 0} level={riskResult?.nivelRiesgo} compact={true} />
+                </div>
             </div>
 
-            {/* Stepper */}
             <div className="stepper">
-                {STEPS.map((step, index) => {
+                {STEPS.map((step) => {
                     const Icon = step.icon
                     const isActive = currentStep === step.id
                     const isCompleted = currentStep > step.id
-
                     return (
-                        <div
-                            key={step.id}
-                            className={`stepper-step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}
-                        >
-                            <div className="stepper-circle">
-                                {isCompleted ? <Check size={18} /> : <Icon size={18} />}
-                            </div>
+                        <div key={step.id} className={`stepper-step ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}`}>
+                            <div className="stepper-circle">{isCompleted ? <Check size={18} /> : <Icon size={18} />}</div>
                             <span className="stepper-label">{step.label}</span>
                         </div>
                     )
                 })}
             </div>
 
-            {/* Error Message */}
-            {error && (
-                <div className="alert alert-danger animate-fade-in">
-                    <AlertTriangle size={20} />
-                    <span>{error}</span>
-                </div>
-            )}
+            {error && <div className="alert alert-danger animate-fade-in"><AlertTriangle size={20} /><span>{error}</span></div>}
 
-            {/* Step Content */}
             <div className="step-content">
                 <div className="glass-card" style={{ padding: '30px' }}>
                     {renderStep()}
                 </div>
             </div>
 
-            {/* Navigation */}
             <div className="step-navigation">
-                <button
-                    className="btn-premium"
-                    style={{ background: 'var(--gray-100)', color: 'var(--text-main)', border: '1px solid var(--gray-200)' }}
-                    onClick={prevStep}
-                    disabled={currentStep === 1}
-                >
-
-                    <ArrowLeft size={18} />
-                    Anterior
+                <button className="btn-premium" style={{ background: 'var(--gray-100)', color: 'var(--text-main)', border: '1px solid var(--gray-200)' }} onClick={prevStep} disabled={currentStep === 1}>
+                    <ArrowLeft size={18} /> Anterior
                 </button>
 
                 {currentStep < STEPS.length ? (
-                    <button
-                        className="btn-premium btn-premium-primary"
-                        onClick={nextStep}
-                    >
-                        Siguiente
-                        <ArrowRight size={18} />
-                    </button>
+                    <button className="btn-premium btn-premium-primary" onClick={nextStep}>Siguiente <ArrowRight size={18} /></button>
                 ) : (
-                    <button
-                        className="btn-premium"
-                        style={{ background: 'var(--success)', color: 'white' }}
-                        onClick={handleSubmit}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <>
-                                <Loader size={18} className="spinner" />
-                                Procesando...
-                            </>
-                        ) : (
-                            <>
-                                <Check size={18} />
-                                Radicar Caso
-                            </>
-                        )}
+                    <button className="btn-premium" style={{ background: 'var(--success)', color: 'white' }} onClick={handleSubmit} disabled={loading}>
+                        {loading ? <><Loader size={18} className="spinner" /> Procesando...</> : <><Check size={18} /> Radicar Caso</>}
                     </button>
                 )}
             </div>
