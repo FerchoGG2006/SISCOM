@@ -205,6 +205,34 @@ const radicarCaso = async (req, res) => {
                 })
             ]);
 
+            // --- SUBIDA DE EVIDENCIAS MULTIMEDIA ---
+            const { evidencias } = req.body;
+            if (evidencias && Array.isArray(evidencias) && evidencias.length > 0 && folderId !== 'PENDING_RETRY') {
+                console.log(`[EVIDENCIA] Subiendo ${evidencias.length} evidencias a Drive...`);
+                for (const ev of evidencias) {
+                    try {
+                        const uploadedEv = await driveService.uploadBase64(
+                            folderId,
+                            ev.base64,
+                            ev.name,
+                            ev.type
+                        );
+                        if (uploadedEv) {
+                            await prisma.documento.create({
+                                data: {
+                                    id_expediente: result.expediente.id,
+                                    nombre: ev.name,
+                                    tipo: 'Evidencia',
+                                    url_drive: uploadedEv.webViewLink || folderId
+                                }
+                            });
+                        }
+                    } catch (evErr) {
+                        console.error(`Error subiendo evidencia ${ev.name}:`, evErr);
+                    }
+                }
+            }
+
             result.drive_folder_id = folderId;
             result.pdf_url = driveFileLink;
         } catch (postError) {

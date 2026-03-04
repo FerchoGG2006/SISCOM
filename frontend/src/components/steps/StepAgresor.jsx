@@ -1,4 +1,6 @@
-import { UserX } from 'lucide-react'
+import React, { useState } from 'react'
+import { UserX, Search, Loader2, Check } from 'lucide-react'
+import api from '../../services/api'
 
 const PARENTESCOS = [
     { value: 'esposo', label: 'Esposo' },
@@ -19,18 +21,56 @@ const PARENTESCOS = [
 ]
 
 export default function StepAgresor({ data, onUpdate }) {
+    const [searching, setSearching] = useState(false);
+    const [found, setFound] = useState(false);
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
         onUpdate({ [name]: type === 'checkbox' ? checked : value })
+        if (name === 'numero_documento') setFound(false);
     }
+
+    const handleSearch = async () => {
+        if (!data.numero_documento) return;
+        setSearching(true);
+        try {
+            const res = await api.get(`/personas/buscar/${data.numero_documento}`);
+            if (res.data.success) {
+                const p = res.data.data;
+                onUpdate({
+                    tipo_documento: p.tipo_documento,
+                    primer_nombre: p.primer_nombre,
+                    segundo_nombre: p.segundo_nombre,
+                    primer_apellido: p.primer_apellido,
+                    segundo_apellido: p.segundo_apellido,
+                    fecha_nacimiento: p.fecha_nacimiento?.split('T')[0],
+                    sexo: p.sexo,
+                    direccion: p.direccion,
+                    barrio: p.barrio,
+                    telefono_celular: p.telefono_celular,
+                    ocupacion: p.ocupacion
+                });
+                setFound(true);
+            }
+        } catch (e) {
+            console.log('Persona no encontrada o error');
+        } finally {
+            setSearching(false);
+        }
+    };
 
     return (
         <div className="step-agresor">
             <div className="form-section">
-                <h3 className="form-section-title">
-                    <UserX size={20} />
-                    Datos del Presunto Agresor
-                </h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h3 className="form-section-title" style={{ margin: 0 }}>
+                        <UserX size={20} />
+                        Datos del Presunto Agresor
+                    </h3>
+                    <div style={{ fontSize: '0.8rem', color: found ? 'var(--success)' : 'var(--gray-400)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        {found ? <><Check size={14} /> Usuario Registrado</> : 'Valide si ya existe en sistema'}
+                    </div>
+                </div>
 
                 <div className="form-row">
                     <div className="form-group">
@@ -52,14 +92,36 @@ export default function StepAgresor({ data, onUpdate }) {
 
                     <div className="form-group">
                         <label className="form-label">Número de Documento</label>
-                        <input
-                            type="text"
-                            name="numero_documento"
-                            className="form-input"
-                            placeholder="Ingrese número (si se conoce)"
-                            value={data.numero_documento || ''}
-                            onChange={handleChange}
-                        />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                                type="text"
+                                name="numero_documento"
+                                className="form-input"
+                                placeholder="Ingrese número (si se conoce)"
+                                value={data.numero_documento || ''}
+                                onChange={handleChange}
+                                style={{ flex: 1 }}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleSearch}
+                                disabled={searching || !data.numero_documento}
+                                style={{
+                                    padding: '0 12px',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--gray-200)',
+                                    background: 'var(--primary)',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {searching ? <Loader2 size={18} className="spinner" /> : <Search size={18} />}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="form-group">

@@ -131,3 +131,53 @@ exports.uploadFile = async (folderId, filePath, fileName, mimeType) => {
     }
 };
 
+/**
+ * Sube un archivo en formato Base64 a Drive
+ * @param {string} folderId ID de la carpeta destino
+ * @param {string} base64 Content en base64 (con o sin prefix)
+ * @param {string} fileName Nombre del archivo
+ * @param {string} mimeType Tipo MIME
+ */
+exports.uploadBase64 = async (folderId, base64, fileName, mimeType) => {
+    const drive = getDriveClient();
+
+    if (!drive) {
+        logger.warn(`[DRIVE-SIMULATOR] Modo simulación. Archivo no subido (Base64): ${fileName}`);
+        return { webViewLink: '#' };
+    }
+
+    try {
+        // Remover el prefix del base64 si existe (data:image/png;base64,...)
+        const base64Data = base64.includes(';base64,') ? base64.split(';base64,')[1] : base64;
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        const { Readable } = require('stream');
+        const readable = new Readable();
+        readable._read = () => { };
+        readable.push(buffer);
+        readable.push(null);
+
+        const fileMetadata = {
+            name: fileName,
+            parents: [folderId]
+        };
+
+        const media = {
+            mimeType: mimeType,
+            body: readable
+        };
+
+        const file = await drive.files.create({
+            resource: fileMetadata,
+            media: media,
+            fields: 'id, webViewLink, webContentLink'
+        });
+
+        logger.info(`[DRIVE-REAL] Archivo Base64 subido exitosamente: ${fileName}`);
+        return file.data;
+    } catch (error) {
+        logger.error(`Error subiendo Base64 ${fileName} a Drive:`, error);
+        throw error;
+    }
+};
+

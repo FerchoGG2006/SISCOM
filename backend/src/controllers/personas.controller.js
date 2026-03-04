@@ -77,4 +77,30 @@ const getPersonaById = async (req, res) => {
     }
 };
 
-module.exports = { getPersonas, getPersonaById };
+const getPersonaByDocumento = async (req, res) => {
+    try {
+        const { documento } = req.params;
+        const persona = await prisma.persona.findUnique({
+            where: { numero_documento: documento },
+            include: {
+                expedientesVictima: {
+                    select: { radicado_hs: true, fecha_radicacion: true, nivel_riesgo: true, estado: true }
+                },
+                expedientesAgresor: {
+                    select: { radicado_hs: true, fecha_radicacion: true, nivel_riesgo: true, estado: true }
+                }
+            }
+        });
+
+        if (!persona) {
+            return res.status(404).json({ success: false, message: 'Persona no registrada' });
+        }
+
+        res.json({ success: true, data: persona });
+    } catch (error) {
+        console.error('Error fetching persona by documento:', error);
+        res.status(500).json({ success: false, message: 'Error al buscar persona' });
+    }
+};
+
+module.exports = { getPersonas, getPersonaById, getPersonaByDocumento };

@@ -6,6 +6,7 @@ import StepAgresor from '../components/steps/StepAgresor'
 import StepHechos from '../components/steps/StepHechos'
 import StepValoracion from '../components/steps/StepValoracion'
 import StepFirma from '../components/steps/StepFirma'
+import StepEvidencia from '../components/steps/StepEvidencia'
 import {
     User,
     UserX,
@@ -16,7 +17,8 @@ import {
     ArrowLeft,
     ArrowRight,
     AlertTriangle,
-    Loader
+    Loader,
+    Camera
 } from 'lucide-react'
 import './RadicarCaso.css'
 
@@ -24,8 +26,9 @@ const STEPS = [
     { id: 1, label: 'Datos Víctima', icon: User },
     { id: 2, label: 'Datos Agresor', icon: UserX },
     { id: 3, label: 'Hechos', icon: FileText },
-    { id: 4, label: 'Valoración Riesgo', icon: Shield },
-    { id: 5, label: 'Firma', icon: PenTool },
+    { id: 4, label: 'Evidencias', icon: Camera },
+    { id: 5, label: 'Valoración Riesgo', icon: Shield },
+    { id: 6, label: 'Firma', icon: PenTool },
 ]
 
 export default function RadicarCaso() {
@@ -34,6 +37,7 @@ export default function RadicarCaso() {
         victima: {},
         agresor: {},
         datosHecho: {},
+        evidencias: [],
         valoracionRiesgo: {},
         firma: null
     })
@@ -88,6 +92,7 @@ export default function RadicarCaso() {
                 victima: formData.victima,
                 agresor: formData.agresor,
                 datosHecho: formData.datosHecho,
+                evidencias: formData.evidencias,
                 respuestas_riesgo: riskAnswers,
                 firma: formData.firma?.firma, // Base64 string
                 metadata_biometrica: formData.firma?.metadata_biometrica,
@@ -104,6 +109,7 @@ export default function RadicarCaso() {
                     nivelRiesgo: response.data.data.riskResult.level.toLowerCase(),
                     puntajeRiesgo: response.data.data.riskResult.score,
                     expedienteId: response.data.data.expediente.id,
+                    pdfUrl: response.data.data.pdf_url,
                     alertas: []
                 })
             }
@@ -141,6 +147,13 @@ export default function RadicarCaso() {
                 )
             case 4:
                 return (
+                    <StepEvidencia
+                        data={formData}
+                        onUpdate={(data) => updateFormData('evidencias', data.evidencias)}
+                    />
+                )
+            case 5:
+                return (
                     <StepValoracion
                         data={formData.valoracionRiesgo}
                         onUpdate={(data) => updateFormData('valoracionRiesgo', data)}
@@ -148,7 +161,7 @@ export default function RadicarCaso() {
                         riskResult={riskResult}
                     />
                 )
-            case 5:
+            case 6:
                 return (
                     <StepFirma
                         data={formData.firma}
@@ -196,21 +209,39 @@ export default function RadicarCaso() {
                         </div>
                     )}
 
-                    <div className="success-actions">
-                        <button
-                            className="btn-premium btn-premium-primary"
-                            onClick={() => navigate(`/expedientes/${success.expedienteId}`)}
-                        >
-                            Ver Expediente
-                        </button>
-                        <button
-                            className="btn-premium"
-                            style={{ background: 'var(--gray-100)', color: 'var(--text-main)', border: '1px solid var(--gray-200)' }}
-                            onClick={() => window.location.reload()}
-                        >
-                            Radicar Otro Caso
-                        </button>
+                    <div className="success-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%' }}>
+                            <button
+                                className="btn-premium btn-premium-primary"
+                                onClick={() => navigate(`/expedientes/${success.expedienteId}`)}
+                            >
+                                Ver Expediente
+                            </button>
+                            <button
+                                className="btn-premium"
+                                style={{ background: 'var(--gray-100)', color: 'var(--text-main)', border: '1px solid var(--gray-200)' }}
+                                onClick={() => window.location.reload()}
+                            >
+                                Radicar Otro
+                            </button>
+                        </div>
 
+                        {success.pdfUrl && (
+                            <button
+                                className="btn-premium"
+                                style={{
+                                    background: 'var(--primary-light)',
+                                    color: 'var(--primary)',
+                                    border: '1px solid var(--primary)',
+                                    width: '100%',
+                                    fontWeight: 700
+                                }}
+                                onClick={() => window.open(success.pdfUrl, '_blank')}
+                            >
+                                <FileText size={18} style={{ marginRight: '8px' }} />
+                                Descargar Auto de Inicio (PDF)
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>

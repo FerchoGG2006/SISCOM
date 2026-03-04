@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Shield, AlertTriangle, CheckCircle } from 'lucide-react'
+import { motion } from 'framer-motion'
 import './StepValoracion.css'
 
 // 52 preguntas del instrumento técnico del Ministerio de Justicia
@@ -107,6 +108,37 @@ const PREGUNTAS = {
     }
 }
 
+const RiskThermometer = ({ score, level }) => {
+    const maxScore = 150
+    const percentage = Math.min((score / maxScore) * 100, 100)
+
+    const colors = {
+        bajo: '#10B981',
+        medio: '#F59E0B',
+        alto: '#F97316',
+        extremo: '#EF4444'
+    }
+
+    const currentColor = colors[level?.toLowerCase()] || '#64748B'
+
+    return (
+        <div className="risk-thermometer-container" style={{ flex: 1, padding: '0 20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', fontSize: '0.8rem', fontWeight: 700 }}>
+                <span style={{ color: 'var(--gray-500)' }}>Intensidad de Riesgo</span>
+                <span style={{ color: currentColor }}>{level?.toUpperCase() || 'CALCULANDO...'}</span>
+            </div>
+            <div className="thermometer-track" style={{ height: '12px', background: 'var(--gray-100)', borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
+                <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${percentage}%` }}
+                    transition={{ type: 'spring', stiffness: 50 }}
+                    style={{ height: '100%', background: currentColor, borderRadius: '10px' }}
+                />
+            </div>
+        </div>
+    )
+}
+
 export default function StepValoracion({ data, onUpdate, onCalculate, riskResult }) {
     const [localData, setLocalData] = useState(data || {})
     const [activeSection, setActiveSection] = useState('seccion1')
@@ -148,26 +180,32 @@ export default function StepValoracion({ data, onUpdate, onCalculate, riskResult
 
     return (
         <div className="step-valoracion">
-            <div className="valoracion-header">
-                <div className="valoracion-title">
+            <div className="valoracion-header" style={{ padding: '20px', background: 'white', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', gap: '30px', marginBottom: '2rem' }}>
+                <div className="valoracion-title" style={{ flex: '0 0 auto', display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <Shield size={32} color="var(--primary)" />
                     <div>
-                        <h3>Instrumento de Valoración de Riesgo</h3>
-                        <p>Instrumento Técnico del Ministerio de Justicia (Instrumento de 52 ítems)</p>
+                        <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Valoración de Riesgo</h3>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--gray-500)', margin: 0 }}>Basado en estándares MinJusticia</p>
                     </div>
                 </div>
 
+                <RiskThermometer
+                    score={riskResult?.puntajeTotal || 0}
+                    level={riskResult?.nivelRiesgo}
+                />
+
                 {riskResult && (
-                    <div className="risk-panel" style={{ '--risk-color': getRiskColor(riskResult.nivelRiesgo) }}>
-                        <div className="risk-score">
-                            <span className="score-value">{riskResult.puntajeTotal}</span>
-                            <span className="score-label">pts</span>
+                    <div className="risk-score-box" style={{
+                        background: getRiskColor(riskResult.nivelRiesgo) + '15',
+                        padding: '10px 20px',
+                        borderRadius: '15px',
+                        textAlign: 'center',
+                        border: `1px solid ${getRiskColor(riskResult.nivelRiesgo)}`
+                    }}>
+                        <div style={{ fontSize: '1.4rem', fontWeight: 800, color: getRiskColor(riskResult.nivelRiesgo) }}>
+                            {riskResult.puntajeTotal}
                         </div>
-                        <div className="risk-level">
-                            <span className={`risk-badge ${riskResult.nivelRiesgo?.toLowerCase()}`}>
-                                {riskResult.nivelRiesgo?.toUpperCase()}
-                            </span>
-                        </div>
+                        <div style={{ fontSize: '0.65rem', fontWeight: 600, color: 'var(--gray-500)' }}>PUNTOS</div>
                     </div>
                 )}
             </div>
