@@ -102,7 +102,7 @@ export default function RadicarCaso() {
 
     const calculateRisk = async (answers) => {
         try {
-            const response = await api.post('/valoracion/calcular', answers)
+            const response = await api.post('/radicar/valoracion/calcular', answers)
             setRiskResult(response.data.data)
             return response.data.data
         } catch (error) {
@@ -155,8 +155,8 @@ export default function RadicarCaso() {
             if (response.data.success) {
                 setSuccess({
                     radicado: response.data.data.radicado,
-                    nivelRiesgo: response.data.data.riskResult.level.toLowerCase(),
-                    puntajeRiesgo: response.data.data.riskResult.score,
+                    nivelRiesgo: response.data.data.riskResult?.nivelRiesgo?.toLowerCase() || 'bajo',
+                    puntajeRiesgo: response.data.data.riskResult?.puntajeTotal || 0,
                     expedienteId: response.data.data.expediente.id,
                     pdfUrl: response.data.data.pdf_url,
                     alertas: []

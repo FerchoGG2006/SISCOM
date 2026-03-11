@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { FileText, Mic, MicOff, Loader2 } from 'lucide-react'
 import AIAdvisor from '../ai/AIAdvisor'
 
@@ -23,6 +23,12 @@ const SUBTIPOS = [
 
 export default function StepHechos({ data, onUpdate }) {
     const [isListening, setIsListening] = useState(false);
+    const textRef = useRef(data.descripcion_hechos || '');
+
+    // Sincronizar el ref con la prop data
+    useEffect(() => {
+        textRef.current = data.descripcion_hechos || '';
+    }, [data.descripcion_hechos]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
@@ -45,7 +51,7 @@ export default function StepHechos({ data, onUpdate }) {
         }
 
         const recognition = new SpeechRecognition();
-        recognition.lang = 'es-AR';
+        recognition.lang = 'es-CO';
         recognition.continuous = true;
         recognition.interimResults = false;
 
@@ -54,14 +60,18 @@ export default function StepHechos({ data, onUpdate }) {
         };
 
         recognition.onresult = (event) => {
-            const transcript = Array.from(event.results)
-                .map(result => result[0])
-                .map(result => result.transcript)
-                .join('');
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript;
+                }
+            }
 
-            const currentText = data.descripcion_hechos || '';
-            const newText = currentText ? `${currentText} ${transcript}` : transcript;
-            onUpdate({ descripcion_hechos: newText });
+            if (finalTranscript) {
+                const updatedText = textRef.current ? `${textRef.current} ${finalTranscript}` : finalTranscript;
+                textRef.current = updatedText;
+                onUpdate({ descripcion_hechos: updatedText });
+            }
         };
 
         recognition.onerror = (event) => {

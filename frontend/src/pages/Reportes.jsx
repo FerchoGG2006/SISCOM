@@ -30,6 +30,8 @@ import {
     Area,
     Legend
 } from 'recharts';
+import { MapContainer, TileLayer, CircleMarker, Tooltip as LeafletTooltip } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 import api from '../services/api';
 
 // --- Styled Components (Modern Analytics Aesthetic) ---
@@ -382,6 +384,43 @@ export default function Reportes() {
                 <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginTop: '1rem' }}>
                     * Los barrios en rojo representan las zonas con mayor densidad de casos reportados en el último período.
                 </p>
+            </ChartCard>
+
+            {/* Mapa de Distribución de Casos (Fase 18) */}
+            <ChartCard>
+                <h3><Search size={20} /> Mapa de Concentración de Casos</h3>
+                <div style={{ width: '100%', height: 450, borderRadius: '12px', overflow: 'hidden', marginTop: '1rem', border: '1px solid var(--gray-200)', zIndex: 0 }}>
+                    <MapContainer center={[4.6097, -74.0817]} zoom={12} style={{ height: '100%', width: '100%' }}>
+                        <TileLayer
+                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        {stats.porBarrio?.map((b, idx) => {
+                            // Simulacion Geospacial: Mapear el índice a coordenadas aproximadas alrededor de una ciudad central
+                            const lat = 4.6097 + (Math.sin(idx * 2.1) * 0.04);
+                            const lng = -74.0817 + (Math.cos(idx * 2.1) * 0.04);
+
+                            const radius = Math.min(Math.max(15, b.cantidad * 4), 40);
+                            const color = b.cantidad >= 5 ? '#EF4444' : (b.cantidad >= 2 ? '#F59E0B' : '#4F46E5');
+
+                            return (
+                                <CircleMarker
+                                    key={idx}
+                                    center={[lat, lng]}
+                                    radius={radius}
+                                    pathOptions={{ color, fillColor: color, fillOpacity: 0.6, weight: 2 }}
+                                >
+                                    <LeafletTooltip>
+                                        <div style={{ textAlign: 'center' }}>
+                                            <strong style={{ display: 'block', fontSize: '1.1rem', marginBottom: '4px' }}>{b.barrio}</strong>
+                                            <span style={{ color: color, fontWeight: 'bold' }}>{b.cantidad} casos activos</span>
+                                        </div>
+                                    </LeafletTooltip>
+                                </CircleMarker>
+                            )
+                        })}
+                    </MapContainer>
+                </div>
             </ChartCard>
         </Container>
     );

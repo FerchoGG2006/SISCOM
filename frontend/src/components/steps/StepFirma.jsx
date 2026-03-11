@@ -1,11 +1,28 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import SignatureCanvas from 'react-signature-canvas'
-import { PenTool, Trash2, Check, FileText, AlertTriangle, ShieldCheck } from 'lucide-react'
+import Webcam from 'react-webcam'
+import { PenTool, Trash2, Check, FileText, AlertTriangle, ShieldCheck, Camera, RefreshCw } from 'lucide-react'
 import './StepFirma.css'
 
 export default function StepFirma({ data, onUpdate, riskResult, formData }) {
     const sigCanvas = useRef(null)
+    const webcamRef = useRef(null)
     const [firmado, setFirmado] = useState(false)
+    const [fotoBase64, setFotoBase64] = useState(null)
+    const [camaraActiva, setCamaraActiva] = useState(true)
+
+    const capturarFoto = useCallback(() => {
+        if (webcamRef.current) {
+            const imageSrc = webcamRef.current.getScreenshot()
+            setFotoBase64(imageSrc)
+            setCamaraActiva(false)
+        }
+    }, [webcamRef])
+
+    const retomarFoto = () => {
+        setFotoBase64(null)
+        setCamaraActiva(true)
+    }
 
     // Ajustar tamaño del canvas al redimensionar
     const canvasProps = {
@@ -16,7 +33,9 @@ export default function StepFirma({ data, onUpdate, riskResult, formData }) {
 
     const limpiarFirma = () => {
         setFirmado(false)
-        onUpdate({ firma: null })
+        setFotoBase64(null)
+        setCamaraActiva(true)
+        onUpdate({ firma: null, metadata_biometrica: null })
         // Pequeño timeout para asegurar que el canvas se montó de nuevo
         setTimeout(() => {
             if (sigCanvas.current) sigCanvas.current.clear()
@@ -37,7 +56,8 @@ export default function StepFirma({ data, onUpdate, riskResult, formData }) {
             resolucion: `${window.screen.width}x${window.screen.height}`,
             userAgent: navigator.userAgent,
             timestamp: new Date().toISOString(),
-            ip: 'No detectada'
+            ip: 'No detectada',
+            foto: fotoBase64 // Guardamos la foto en Base64
         }
 
         // 1. Intentar obtener IP
@@ -158,7 +178,49 @@ export default function StepFirma({ data, onUpdate, riskResult, formData }) {
                 </p>
             </div>
 
-            {/* 3. Área de Firma Digital */}
+            {/* 3. Captura Biométrica (Fotografía) */}
+            <div className="firma-container biometria-section">
+                <div className="firma-header">
+                    <h4><Camera size={20} /> Captura Fotográfica (Biometría)</h4>
+                    {!firmado && (
+                        <p className="firma-instrucciones">
+                            Permita el acceso a la cámara para capturar la identidad de quien firma.
+                        </p>
+                    )}
+                </div>
+
+                <div className="webcam-wrapper">
+                    {camaraActiva && !fotoBase64 ? (
+                        <div className="cam-active-area">
+                            <Webcam
+                                audio={false}
+                                ref={webcamRef}
+                                screenshotFormat="image/jpeg"
+                                videoConstraints={{ width: 320, height: 240, facingMode: "user" }}
+                                className="webcam-viewer"
+                            />
+                            <button type="button" className="btn btn-secondary btn-capturar" onClick={capturarFoto} style={{ marginTop: '1rem' }}>
+                                <Camera size={18} /> Tomar Foto
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="foto-preview-wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                            {fotoBase64 ? (
+                                <img src={fotoBase64} alt="Captura Biométrica" className="foto-preview" style={{ borderRadius: '8px', border: '2px solid var(--success)', maxWidth: '320px' }} />
+                            ) : (
+                                <div className="no-foto" style={{ padding: '2rem', background: 'var(--gray-100)', borderRadius: '8px' }}>Sin foto de verificación</div>
+                            )}
+                            {!firmado && (
+                                <button type="button" className="btn btn-secondary" onClick={retomarFoto}>
+                                    <RefreshCw size={18} /> Volver a Intentar
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* 4. Área de Firma Digital */}
             <div className="firma-container">
                 <div className="firma-header">
                     <h4><PenTool size={20} /> Firma de la Víctima</h4>

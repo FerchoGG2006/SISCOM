@@ -119,8 +119,8 @@ const radicarCaso = async (req, res) => {
                     radicado_hs: radicado,
                     id_victima: personaVictima.id,
                     id_agresor: personaAgresorId,
-                    nivel_riesgo: riskResult.level,
-                    puntaje_riesgo: riskResult.score,
+                    nivel_riesgo: riskResult.nivelRiesgo,
+                    puntaje_riesgo: riskResult.puntajeTotal,
                     relato_hechos: (datosHecho?.descripcion_hechos) || '',
                     estado: 'Abierto',
                     firma_victima: firma,
@@ -148,20 +148,20 @@ const radicarCaso = async (req, res) => {
                     id_expediente: expediente.id,
                     id_usuario: finalUsuarioId,
                     tipo: 'Radicación',
-                    descripcion: `Radicación exitosa del caso ${radicado}. Nivel de riesgo detectado: ${riskResult.level}.`
+                    descripcion: `Radicación exitosa del caso ${radicado}. Nivel de riesgo detectado: ${riskResult.nivelRiesgo}.`
                 }
             });
 
-            // Registrar Auditoría
-            await AuditService.log({
-                id_usuario: finalUsuarioId,
-                accion: 'RADICACION',
-                modulo: 'EXPEDIENTES',
-                detalles: `Radicación exitosa de expediente ${radicado}`,
-                ip: req.ip
-            });
+            return { expediente, radicado, riskResult, finalUsuarioId };
+        });
 
-            return { expediente, radicado, riskResult };
+        // Registrar Auditoría fuera de la transacción para evitar lock en SQLite
+        await AuditService.log({
+            id_usuario: result.finalUsuarioId,
+            accion: 'RADICACION',
+            modulo: 'EXPEDIENTES',
+            detalles: `Radicación exitosa de expediente ${result.radicado}`,
+            ip: req.ip
         });
 
         // 9. Operaciones de Salida (Drive + PDF) Robustas
@@ -240,7 +240,7 @@ const radicarCaso = async (req, res) => {
         }
 
         // --- 10. GENERACIÓN AUTOMÁTICA DE MEDIDAS DE PROTECCIÓN ---
-        const nivelRiesgo = result.riskResult?.level?.toLowerCase() || '';
+        const nivelRiesgo = result.riskResult?.nivelRiesgo?.toLowerCase() || '';
         if (nivelRiesgo === 'alto' || nivelRiesgo === 'extremo') {
             try {
                 console.log(`[PROTECCION] Riesgo ${nivelRiesgo} detectado. Generando medidas de protección...`);
@@ -277,6 +277,22 @@ const radicarCaso = async (req, res) => {
                     mensaje: `El caso ${result.radicado} ha sido calificado como RIESGO ${nivelRiesgo.toUpperCase()}. Se requiere atención inmediata.`,
                     tipo: 'danger'
                 });
+
+                // Simulación de WhatsApp / SMS
+                console.log(`\n======================================================`);
+                console.log(`🚨 [WHATSAPP API SIMULATOR] Alerta Crítica Enviada`);
+                console.log(`📱 A: Policía Cuadrante / Comisario de Turno`);
+                console.log(`💬 "SISCOM URGENTE: El caso ${result.radicado} presenta RIESGO ${nivelRiesgo.toUpperCase()}. Víctima: ${victimaParaPDF.nombres} ${victimaParaPDF.apellidos}. Requiere acción inmediata."`);
+                console.log(`======================================================\n`);
+
+                await AuditService.log(
+                    finalUsuarioId,
+                    'ALERTA_WHATSAPP_SIMULADA',
+                    'Notificaciones',
+                    result.expediente.id,
+                    { mensaje: `Alerta WhatsApp enviada a celular de turno para caso ${result.radicado}` }
+                );
+
             } catch (proteccionError) {
                 console.error('Error generando medidas de protección automáticas:', proteccionError);
             }
@@ -332,4 +348,32 @@ const radicarCaso = async (req, res) => {
     }
 };
 
-module.exports = { radicarCaso };
+const calcularRiesgo = async (req, res) => {
+    try {
+        const answers = req.body;
+        // Si viene como objeto con ids de items, convertir a array de 52
+        let answersArray = [];
+        if (typeof answers === 'object' && !Array.isArray(answers)) {
+            answersArray = Array.from({ length: 52 }, (_, i) => {
+                const key = `item_${String(i + 1).padStart(2, '0')}`;
+                return answers[key] || false;
+            });
+        } else {
+            answersArray = answers;
+        }
+
+        const result = riskService.calculateRisk(answersArray);
+        res.json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error('Error calculando riesgo:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error al calcular el riesgo'
+        });
+    }
+};
+
+module.exports = { radicarCaso, calcularRiesgo };

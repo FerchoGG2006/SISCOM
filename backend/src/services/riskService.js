@@ -39,18 +39,10 @@ exports.calculateRisk = (answers) => {
     });
 
     // Determine Level
-    let level = 'Bajo';
-    if (score >= 150) level = 'Crítico';
-    else if (score >= 50) level = 'Moderado';
-    else if (score >= 16) level = 'Bajo'; // Everything below 50 is Bajo for this range
+    let level = 'bajo';
+    if (score >= 150) level = 'extremo';
+    else if (score >= 50) level = 'alto';
+    else if (score >= 16) level = 'medio';
 
-
-    // User requested specifically to follow user logic. 
-    // We will use standard ranges if not provided, but typically:
-    // < 16: Bajo
-    // 16 - 49: Medio
-    // 50 - 149: Alto
-    // > 150: Extremo (Auto-generated assumption based on previous context)
-
-    return { score, level };
+    return { puntajeTotal: score, nivelRiesgo: level };
 };
