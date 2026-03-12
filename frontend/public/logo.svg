@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+    <!-- Royal Blue Shield -->
+    <path d="M256 48 C150 48 64 80 64 80 L64 240 C64 380 220 450 256 464 C292 450 448 380 448 240 L448 80 C448 80 362 48 256 48 Z" fill="none" stroke="#2563EB" stroke-width="48" stroke-linejoin="round" />
+    
+    <!-- Inner S -->
+    <path d="M320 176 C320 176 280 152 256 152 C210 152 176 180 176 220 C176 264 216 276 256 288 C296 300 336 324 336 368 C336 416 296 440 256 440 C210 440 168 416 168 416" fill="none" stroke="#2563EB" stroke-width="48" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

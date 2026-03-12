@@ -38,9 +38,8 @@ export default function Login() {
                 <div className="login-card glass-card">
                     <div className="login-header">
                         <div className="login-logo">
-                            <Shield className="login-logo-icon" />
+                            <img src="/logo.png" alt="SISCOM Logo Full" className="login-logo-image" />
                         </div>
-                        <h1>SISCOM</h1>
                         <p>Sistema de Gestión para Comisarías de Familia</p>
                     </div>
 

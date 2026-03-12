@@ -39,21 +39,22 @@
 }
 
 .login-logo {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-radius: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 24px;
-    box-shadow: 0 8px 24px var(--primary-glow);
-    transform: rotate(-5deg);
-    transition: transform 0.3s ease;
+    margin: 0 auto -20px;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.login-logo-image {
+    width: 220px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.3));
 }
 
 .login-logo:hover {
-    transform: rotate(0deg) scale(1.05);
+    transform: scale(1.05);
 }
 
 .login-logo-icon {

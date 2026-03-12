@@ -21,6 +21,7 @@ import {
 
 import { Outlet } from 'react-router-dom';
 import NotificationDrawer from './NotificationDrawer';
+import { useAuthStore } from '../../store/authStore';
 
 const LayoutContainer = styled.div`
   display: flex;
@@ -54,8 +55,24 @@ const SidebarHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 3rem;
-  padding-left: 0.5rem;
+  margin-bottom: 2rem;
+  padding-left: 0;
+`;
+
+const SidebarNav = styled.nav`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-bottom: 1rem;
+  
+  /* Esconder scrollbar pero mantener la funcionalidad */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
 `;
 
 const LogoText = styled(motion.span)`
@@ -136,6 +153,7 @@ export const Layout = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const location = useLocation();
+  const { logout } = useAuthStore();
 
   const menuItems = [
     { icon: <BarChart3 size={20} />, label: 'Dashboard', path: '/' },
@@ -157,7 +175,7 @@ export const Layout = () => {
         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       >
         <SidebarHeader>
-          <ShieldCheck size={32} color="#4F46E5" />
+          <img src="/logo-emblem.png" alt="SISCOM Logo Emblem" style={{ width: 72, height: 72, objectFit: 'contain' }} />
           <AnimatePresence>
             {!isCollapsed && (
               <LogoText
@@ -171,7 +189,7 @@ export const Layout = () => {
           </AnimatePresence>
         </SidebarHeader>
 
-        <nav style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <SidebarNav>
           {menuItems.map((item) => (
             <NavLink
               key={item.label}
@@ -201,11 +219,11 @@ export const Layout = () => {
           </LogoutButton>
 
 
-          <LogoutButton whileHover={{ x: 5 }}>
+          <LogoutButton whileHover={{ x: 5 }} onClick={logout}>
             <LogOut size={20} />
             {!isCollapsed && <span>Cerrar Sesión</span>}
           </LogoutButton>
-        </nav>
+        </SidebarNav>
 
         <CollapseButton onClick={() => setIsCollapsed(!isCollapsed)}>
           {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
