@@ -307,7 +307,7 @@ class PDFGeneratorService {
      * Genera oficio de medidas de protección
      */
     async generarMedidasProteccion(expediente, victima, agresor, medidas, usuario) {
-        const fileName = `Medidas_Proteccion_${expediente.radicado}.pdf`;
+        const fileName = `Medidas_Proteccion_${expediente.radicado_hs}.pdf`;
         const filePath = path.join(this.outputDir, fileName);
 
         return new Promise((resolve, reject) => {
@@ -324,7 +324,7 @@ class PDFGeneratorService {
                 this._agregarEncabezado(doc, 'RESOLUCIÓN DE MEDIDAS DE PROTECCIÓN');
 
                 doc.fontSize(10).font('Helvetica')
-                    .text(`Radicado: ${expediente.radicado}`, { align: 'right' })
+                    .text(`Radicado: ${expediente.radicado_hs}`, { align: 'right' })
                     .text(`Fecha: ${this._formatearFecha(new Date())}`, { align: 'right' });
                 doc.moveDown(2);
 
@@ -332,7 +332,7 @@ class PDFGeneratorService {
                 doc.fontSize(11).font('Helvetica-Bold').text('PARTES:');
                 doc.fontSize(10).font('Helvetica')
                     .text(`VÍCTIMA: ${victima.primer_nombre} ${victima.primer_apellido}, identificado(a) con ${victima.tipo_documento} No. ${victima.numero_documento}`)
-                    .text(`AGRESOR: ${agresor.primer_nombre} ${agresor.primer_apellido}, identificado(a) con ${agresor.tipo_documento} No. ${agresor.numero_documento || 'Por establecer'}`);
+                    .text(`AGRESOR: ${agresor ? `${agresor.primer_nombre} ${agresor.primer_apellido}` : 'Por Establecer'}, identificado(a) con ${agresor ? agresor.tipo_documento : ''} No. ${agresor ? agresor.numero_documento : 'Por establecer'}`);
                 doc.moveDown(1);
 
                 // Antecedentes
@@ -400,7 +400,7 @@ class PDFGeneratorService {
      * Genera oficio para Policía Nacional
      */
     async generarOficioPolicia(expediente, victima, agresor, usuario) {
-        const fileName = `Oficio_Policia_${expediente.radicado}.pdf`;
+        const fileName = `Oficio_Policia_${expediente.radicado_hs}.pdf`;
         const filePath = path.join(this.outputDir, fileName);
 
         return new Promise((resolve, reject) => {
@@ -418,7 +418,7 @@ class PDFGeneratorService {
 
                 const fecha = this._formatearFecha(new Date());
                 doc.fontSize(10).font('Helvetica')
-                    .text(`Radicado: ${expediente.radicado}`, { align: 'right' })
+                    .text(`Radicado: ${expediente.radicado_hs}`, { align: 'right' })
                     .text(`Fecha: ${fecha}`, { align: 'right' });
                 doc.moveDown(2);
 
@@ -433,7 +433,7 @@ class PDFGeneratorService {
 
                 // Asunto
                 doc.fontSize(10).font('Helvetica-Bold')
-                    .text(`Asunto: Solicitud de protección - Radicado ${expediente.radicado}`);
+                    .text(`Asunto: Solicitud de protección - Radicado ${expediente.radicado_hs}`);
                 doc.moveDown(1);
 
                 // Cuerpo
@@ -473,8 +473,8 @@ class PDFGeneratorService {
                 // Datos del agresor
                 doc.fontSize(10).font('Helvetica-Bold').text('DATOS DEL PRESUNTO AGRESOR:');
                 doc.fontSize(10).font('Helvetica')
-                    .text(`Nombre: ${agresor.primer_nombre} ${agresor.primer_apellido}`)
-                    .text(`Documento: ${agresor.tipo_documento} ${agresor.numero_documento || 'Por establecer'}`);
+                    .text(`Nombre: ${agresor ? `${agresor.primer_nombre} ${agresor.primer_apellido}` : 'Por establecer'}`)
+                    .text(`Documento: ${agresor && agresor.tipo_documento ? agresor.tipo_documento : ''} ${agresor && agresor.numero_documento ? agresor.numero_documento : 'Por establecer'}`);
 
                 doc.moveDown(2);
 
@@ -507,7 +507,7 @@ class PDFGeneratorService {
      * Genera oficio para sector salud
      */
     async generarOficioSalud(expediente, victima, usuario) {
-        const fileName = `Oficio_Salud_${expediente.radicado}.pdf`;
+        const fileName = `Oficio_Salud_${expediente.radicado_hs}.pdf`;
         const filePath = path.join(this.outputDir, fileName);
 
         return new Promise((resolve, reject) => {
@@ -523,7 +523,7 @@ class PDFGeneratorService {
                 this._agregarEncabezado(doc, 'OFICIO');
 
                 doc.fontSize(10).font('Helvetica')
-                    .text(`Radicado: ${expediente.radicado}`, { align: 'right' })
+                    .text(`Radicado: ${expediente.radicado_hs}`, { align: 'right' })
                     .text(`Fecha: ${this._formatearFecha(new Date())}`, { align: 'right' });
                 doc.moveDown(2);
 

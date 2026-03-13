@@ -453,7 +453,26 @@ export default function ExpedienteDetalle() {
 
         {/* Drive Link */}
         {expediente.drive_folder_id && (
-          <a href={`https://drive.google.com/drive/folders/${expediente.drive_folder_id}`} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+          <a
+            href={
+              expediente.drive_folder_id.startsWith('simulated') || expediente.drive_folder_id.startsWith('PENDING')
+                ? '#'
+                : `https://drive.google.com/drive/folders/${expediente.drive_folder_id}`
+            }
+            target={
+              expediente.drive_folder_id.startsWith('simulated') || expediente.drive_folder_id.startsWith('PENDING')
+                ? '_self'
+                : '_blank'
+            }
+            rel="noreferrer"
+            style={{ textDecoration: 'none' }}
+            onClick={(e) => {
+              if (expediente.drive_folder_id.startsWith('simulated') || expediente.drive_folder_id.startsWith('PENDING')) {
+                e.preventDefault();
+                alert('La carpeta física en Drive no está disponible (Sistema en modo Simulación o Pendiente).');
+              }
+            }}
+          >
             <Card style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', border: '1px solid #4F46E5', background: '#EEF2FF' }}>
               <Folder size={24} color="#4F46E5" />
               <div>
@@ -492,11 +511,11 @@ export default function ExpedienteDetalle() {
                       <Shield size={24} color="#EF4444" />
                       <span>Oficio Policía</span>
                     </QuickActionBtn>
-                    <QuickActionBtn onClick={() => handleAction('doc-medidas')}>
+                    <QuickActionBtn onClick={() => handleAction('doc-medidas-proteccion')}>
                       <FileText size={24} color="#F59E0B" />
                       <span>Medidas Prot.</span>
                     </QuickActionBtn>
-                    <QuickActionBtn onClick={() => handleAction('doc-salud')}>
+                    <QuickActionBtn onClick={() => handleAction('doc-oficio-salud')}>
                       <Plus size={24} color="#10B981" />
                       <span>Remisión Salud</span>
                     </QuickActionBtn>
@@ -560,7 +579,25 @@ export default function ExpedienteDetalle() {
                   <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Documentos Oficiales</h3>
                   <ActionGrid>
                     {expediente.documentos.filter(d => d.nombre.toLowerCase().includes('.pdf')).map(doc => (
-                      <Card key={doc.id} as="a" href={doc.url_drive} target="_blank" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem', cursor: 'pointer' }}>
+                      <Card
+                        key={doc.id}
+                        as="a"
+                        href={
+                          !doc.url_drive || doc.url_drive.startsWith('simulated') || doc.url_drive === 'PENDING'
+                            ? '#'
+                            : doc.url_drive.startsWith('http')
+                              ? doc.url_drive
+                              : `https://drive.google.com/file/d/${doc.url_drive}/view`
+                        }
+                        onClick={(e) => {
+                          if (!doc.url_drive || doc.url_drive.startsWith('simulated') || doc.url_drive === 'PENDING') {
+                            e.preventDefault();
+                            alert('Archivo no disponible físicamente (Modo simulación)');
+                          }
+                        }}
+                        target={(!doc.url_drive || doc.url_drive.startsWith('simulated') || doc.url_drive === 'PENDING') ? '_self' : '_blank'}
+                        style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '1rem', cursor: 'pointer' }}
+                      >
                         <div style={{ padding: '1rem', background: '#F3F4F6', borderRadius: '50%' }}>
                           <FileText size={24} color="#4B5563" />
                         </div>

@@ -1,0 +1,79 @@
+[
+  {
+    "parents": [
+      "1AKq4Tkg3JjnK26aYGfPIJIZPeW-Dh3JV"
+    ],
+    "id": "10U0ngVLYj_dJIHl4IIeI5oQuPPJ8bQvX",
+    "name": "HS-2026-00002 - Andrea Carolina Mendoza",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  {
+    "parents": [
+      "1AKq4Tkg3JjnK26aYGfPIJIZPeW-Dh3JV"
+    ],
+    "id": "1t7gV2oYKm9q6xMICUYLwndiNoSEaq_F1",
+    "name": "TEST_FOLDER_SISCOM_1773414908286",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  {
+    "parents": [
+      "1AKq4Tkg3JjnK26aYGfPIJIZPeW-Dh3JV"
+    ],
+    "id": "1rPXQyNySM_eodMJIlVjngETFidtl1KhI",
+    "name": "HS-2026-00008 - Jane Doe",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  {
+    "parents": [
+      "1AKq4Tkg3JjnK26aYGfPIJIZPeW-Dh3JV"
+    ],
+    "id": "1-0TRMycI46psVhS0N70QFBI-RIdjEe_S",
+    "name": "HS-2026-00007 - Jane Doe",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  {
+    "parents": [
+      "1AKq4Tkg3JjnK26aYGfPIJIZPeW-Dh3JV"
+    ],
+    "id": "189RTnoB8jJPYGNdHmbw7sHuFL0Cl0_Rk",
+    "name": "HS-2026-00006 - Maria Perez",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  {
+    "parents": [
+      "1AKq4Tkg3JjnK26aYGfPIJIZPeW-Dh3JV"
+    ],
+    "id": "1viSdIXYF4fUcJnv9ob5_uRgfMpu98EYd",
+    "name": "HS-2026-00005 - Andrea Carolina Mendoza",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  {
+    "parents": [
+      "1AKq4Tkg3JjnK26aYGfPIJIZPeW-Dh3JV"
+    ],
+    "id": "14m9zqbOZnehf2DCsCnIKZxw5CHh_Cx6W",
+    "name": "HS-2026-00004 - YOJAIRA MARIA VERGARA TAMARA",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  {
+    "parents": [
+      "1AKq4Tkg3JjnK26aYGfPIJIZPeW-Dh3JV"
+    ],
+    "id": "1MXWXiakHF2FnikSd2g_wrh-CD1-Pg2lo",
+    "name": "HS-2026-00003 - Fernando José Baquero Vergara",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  {
+    "parents": [
+      "0AP7H5TEFVEBKUk9PVA"
+    ],
+    "id": "1A6cUOx4gmxmVy0hmizAlEDDES0FW70jc",
+    "name": "HS-2026-00002 - YOJAIRA MARIA VERGARA TAMARA",
+    "mimeType": "application/vnd.google-apps.folder"
+  },
+  {
+    "id": "1AKq4Tkg3JjnK26aYGfPIJIZPeW-Dh3JV",
+    "name": "EXPEDIENTES SISCOM",
+    "mimeType": "application/vnd.google-apps.folder"
+  }
+]

@@ -141,8 +141,20 @@ export default function EvidenceVault({ expedienteId, documentos, onRefresh }) {
                         <EvidenceCard
                             key={doc.id}
                             as="a"
-                            href={doc.url_drive}
-                            target="_blank"
+                            href={
+                                !doc.url_drive || doc.url_drive.startsWith('simulated') || doc.url_drive === 'PENDING'
+                                    ? '#'
+                                    : doc.url_drive.startsWith('http')
+                                        ? doc.url_drive
+                                        : `https://drive.google.com/file/d/${doc.url_drive}/view`
+                            }
+                            onClick={(e) => {
+                                if (!doc.url_drive || doc.url_drive.startsWith('simulated') || doc.url_drive === 'PENDING') {
+                                    e.preventDefault();
+                                    alert('Archivo no disponible físicamente (Modo simulación)');
+                                }
+                            }}
+                            target={(!doc.url_drive || doc.url_drive.startsWith('simulated') || doc.url_drive === 'PENDING') ? '_self' : '_blank'}
                             style={{ textDecoration: 'none' }}
                             whileHover={{ scale: 1.02 }}
                         >
