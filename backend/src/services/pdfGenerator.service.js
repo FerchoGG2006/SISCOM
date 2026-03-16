@@ -794,6 +794,72 @@ class PDFGeneratorService {
             }
         });
     }
+
+    /**
+         * Genera datos ficticios para previsualización de plantillas
+         */
+    getDummyData() {
+        return {
+            expediente: {
+                radicado: '2026-0001',
+                radicado_hs: 'EXP-2026-0001-TEST',
+                fecha_radicacion: new Date(),
+                nivel_riesgo: 'Alto',
+                puntaje_riesgo: 75,
+                descripcion_hechos: 'Este es un relato de prueba generado automáticamente para la previsualización de la plantilla institucional SISCOM. Representa cómo se verá la descripción de los hechos en el documento final generado por el sistema.',
+                estado: 'Abierto'
+            },
+            victima: {
+                nombres: 'JUANA',
+                apellidos: 'PÉREZ GARCÍA',
+                primer_nombre: 'JUANA',
+                primer_apellido: 'PÉREZ',
+                segundo_apellido: 'GARCÍA',
+                tipo_documento: 'CC',
+                numero_documento: '1.234.567.890',
+                direccion: 'Calle Ficticia 123, Barrio El Prado',
+                telefono_celular: '300 000 0000',
+                sexo: 'F',
+                fecha_nacimiento: '15/05/1990',
+                estado_civil: 'Soltera',
+                ocupacion: 'Docente',
+                eps: 'Salud Total'
+            },
+            agresor: {
+                nombres: 'PEDRO',
+                apellidos: 'RODRÍGUEZ',
+                primer_nombre: 'PEDRO',
+                primer_apellido: 'RODRÍGUEZ',
+                tipo_documento: 'CC',
+                numero_documento: '9.876.543.210',
+                parentesco_con_victima: 'Ex-compañero permanente',
+                direccion: 'Avenida Siempre Viva 742',
+                telefono_celular: '311 111 1111'
+            },
+            usuario: {
+                nombres: 'GUSTAVO',
+                apellidos: 'BOLAÑOS',
+                cargo: 'COMISARIO DE FAMILIA PRINCIPAL',
+                rol: 'comisario'
+            },
+            audiencia: {
+                fecha_programada: new Date(Date.now() + 86400000 * 3), // +3 días
+                lugar: 'SALA DE AUDIENCIAS No. 1 - COMISARÍA CENTRAL'
+            },
+            valoracion: {
+                nivel_riesgo: 'alto',
+                puntaje_total: 75,
+                puntaje_seccion_1: 5,
+                puntaje_seccion_2: 3,
+                puntaje_seccion_3: 15,
+                puntaje_seccion_4: 20,
+                puntaje_seccion_5: 0,
+                puntaje_seccion_6: 12,
+                puntaje_seccion_7: 20,
+                firma_digital_victima: true
+            }
+        };
+    }
 }
 
 module.exports = new PDFGeneratorService();

@@ -248,9 +248,30 @@ export default function Configuracion() {
         }
     };
 
-    const handlePreviewTemplate = (name) => {
-        setMsg({ type: 'success', text: `Vista previa de "${name}" generándose... El motor de plantillas está listo.` });
-        setTimeout(() => setMsg(null), 3000);
+    const handlePreviewTemplate = async (templateName) => {
+        const mapping = {
+            'Auto de Inicio': 'autoinicio',
+            'Medida de Protección': 'medidas',
+            'Oficio Policía': 'oficiopolicia',
+            'Citación Audiencia': 'citacion'
+        };
+
+        const key = mapping[templateName];
+        if (!key) return;
+
+        setMsg(`Generando vista previa de ${templateName}...`);
+
+        try {
+            const res = await api.get(`/configuracion/preview/${key}`);
+            if (res.data.success && res.data.url) {
+                window.open(res.data.url, '_blank');
+                setMsg(null);
+            }
+        } catch (e) {
+            console.error('Error en vista previa:', e);
+            setMsg('Error al generar vista previa');
+            setTimeout(() => setMsg(null), 3000);
+        }
     };
 
     const handleChange = (field, value) => {

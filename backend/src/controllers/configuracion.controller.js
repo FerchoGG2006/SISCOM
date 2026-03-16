@@ -48,6 +48,50 @@ class ConfiguracionController {
             res.status(500).json({ success: false, message: 'Error al actualizar configuración' });
         }
     }
+    /**
+     * GET /api/v1/configuracion/preview/:template
+     * Generar un PDF de vista previa para una plantilla específica
+     */
+    static async vistaPrevia(req, res) {
+        const { template } = req.params;
+        const pdfService = require('../services/pdfGenerator.service');
+
+        try {
+            const dummy = pdfService.getDummyData();
+            let result;
+
+            switch (template) {
+                case 'autoinicio':
+                    result = await pdfService.generarAutoInicio(dummy.expediente, dummy.victima, dummy.agresor, dummy.usuario);
+                    break;
+                case 'medidas':
+                    result = await pdfService.generarMedidasProteccion(dummy.expediente, dummy.victima, dummy.agresor, null, dummy.usuario);
+                    break;
+                case 'oficiopolicia':
+                    result = await pdfService.generarOficioPolicia(dummy.expediente, dummy.victima, dummy.agresor, dummy.usuario);
+                    break;
+                case 'citacion':
+                    result = await pdfService.generarCitacionAudiencia(dummy.expediente, dummy.audiencia, dummy.victima, dummy.agresor, dummy.usuario);
+                    break;
+                default:
+                    return res.status(400).json({ success: false, message: 'Plantilla no válida' });
+            }
+
+            // Devolver la URL del documento generado
+            const protocol = req.protocol === 'https' ? 'https' : 'http';
+            const fileUrl = `${protocol}://${req.get('host')}/documentos/${result.fileName}`;
+
+            res.json({
+                success: true,
+                url: fileUrl,
+                fileName: result.fileName
+            });
+
+        } catch (error) {
+            logger.error(`Error generando vista previa para ${template}:`, error);
+            res.status(500).json({ success: false, message: 'Error al generar la vista previa' });
+        }
+    }
 }
 
 module.exports = ConfiguracionController;
