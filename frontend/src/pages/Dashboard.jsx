@@ -104,11 +104,11 @@ export default function Dashboard() {
           });
 
           setDistribution([
-            { name: 'Crítico', value: d.risk.critico },
+            { name: 'Bajo/Mod', value: d.counts.total - (d.risk.critico + d.risk.alto) },
             { name: 'Alto', value: d.risk.alto },
-            { name: 'Bajo/Mod', value: d.counts.total - (d.risk.critico + d.risk.alto) }
+            { name: 'Crítico', value: d.risk.critico }
           ]);
-          setTrend([]); // Todo: Implement trend in backend
+          setTrend(d.trend || []);
         }
 
         if (casesRes.data && casesRes.data.success) {

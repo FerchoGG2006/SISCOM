@@ -4,10 +4,11 @@ const { authMiddleware, roleMiddleware } = require('../middleware/auth.middlewar
 const configuracionController = require('../controllers/configuracion.controller');
 
 // Solo admin puede gestionar configuración
+// La protección por rol se maneja en cada ruta individualmente
 router.use(authMiddleware);
-router.use(roleMiddleware('admin'));
+// router.use(roleMiddleware('admin')); // Eliminado para permitir GET por comisario
 
-router.get('/', configuracionController.obtener);
-router.put('/', configuracionController.actualizar);
+router.get('/', roleMiddleware('admin', 'comisario'), configuracionController.obtener);
+router.put('/', roleMiddleware('admin'), configuracionController.actualizar);
 
 module.exports = router;

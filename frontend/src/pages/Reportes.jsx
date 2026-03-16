@@ -229,7 +229,28 @@ export default function Reportes() {
         }
     };
 
-    if (loading || !stats) return null;
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '600px' }}>
+                <p style={{ color: 'var(--gray-500)', fontSize: '1.2rem', fontWeight: 700 }}>Analizando datos institucionales...</p>
+            </div>
+        );
+    }
+
+    if (!stats) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '600px', gap: '1rem' }}>
+                <AlertTriangle size={48} color="var(--danger)" />
+                <p style={{ color: 'var(--gray-700)', fontSize: '1.2rem', fontWeight: 700 }}>Error al cargar estadísticas</p>
+                <button
+                    onClick={loadData}
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '12px', cursor: 'pointer' }}
+                >
+                    Reintentar
+                </button>
+            </div>
+        );
+    }
 
     // Prepare data for charts
     const riskData = Object.entries(stats.porRiesgo).map(([name, value]) => ({
@@ -389,6 +410,7 @@ export default function Reportes() {
             {/* Mapa de Distribución de Casos (Fase 18) */}
             <ChartCard>
                 <h3><Search size={20} /> Mapa de Concentración de Casos</h3>
+                {/* 
                 <div style={{ width: '100%', height: 450, borderRadius: '12px', overflow: 'hidden', marginTop: '1rem', border: '1px solid var(--gray-200)', zIndex: 0 }}>
                     <MapContainer center={[4.6097, -74.0817]} zoom={12} style={{ height: '100%', width: '100%' }}>
                         <TileLayer
@@ -396,13 +418,10 @@ export default function Reportes() {
                             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
                         {stats.porBarrio?.map((b, idx) => {
-                            // Simulacion Geospacial: Mapear el índice a coordenadas aproximadas alrededor de una ciudad central
                             const lat = 4.6097 + (Math.sin(idx * 2.1) * 0.04);
                             const lng = -74.0817 + (Math.cos(idx * 2.1) * 0.04);
-
                             const radius = Math.min(Math.max(15, b.cantidad * 4), 40);
                             const color = b.cantidad >= 5 ? '#EF4444' : (b.cantidad >= 2 ? '#F59E0B' : '#4F46E5');
-
                             return (
                                 <CircleMarker
                                     key={idx}
@@ -420,6 +439,11 @@ export default function Reportes() {
                             )
                         })}
                     </MapContainer>
+                </div>
+                */}
+                <div style={{ padding: '2rem', background: 'var(--gray-50)', borderRadius: '16px', textAlign: 'center', border: '1px solid var(--gray-200)' }}>
+                    <Search size={32} color="var(--gray-400)" style={{ marginBottom: '1rem' }} />
+                    <p style={{ color: 'var(--gray-600)', fontWeight: 600 }}>Mapa de calor geográfico temporalmente en mantenimiento.</p>
                 </div>
             </ChartCard>
         </Container>

@@ -270,7 +270,28 @@ export default function Configuracion() {
         }
     };
 
-    if (loading || !config) return null;
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '600px' }}>
+                <p style={{ color: 'var(--gray-500)', fontSize: '1.2rem', fontWeight: 700 }}>Cargando preferencias del sistema...</p>
+            </div>
+        );
+    }
+
+    if (!config) {
+        return (
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '600px', gap: '1rem' }}>
+                <Shield size={48} color="var(--danger)" />
+                <p style={{ color: 'var(--gray-700)', fontSize: '1.2rem', fontWeight: 700 }}>No tienes permisos o error de conexión</p>
+                <button
+                    onClick={loadConfig}
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '0.8rem 1.5rem', borderRadius: '12px', cursor: 'pointer' }}
+                >
+                    Reintentar
+                </button>
+            </div>
+        );
+    }
 
     return (
         <Container>

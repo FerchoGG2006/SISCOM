@@ -41,6 +41,29 @@ const getStats = async (req, res) => {
             prisma.usuario.count()
         ]);
 
+        // Calcular tendencia de los últimos 6 meses
+        const { subMonths, startOfMonth, format } = require('date-fns');
+        const trend = [];
+        for (let i = 5; i >= 0; i--) {
+            const date = subMonths(new Date(), i);
+            const start = startOfMonth(date);
+            const end = i === 0 ? todayEnd : endOfDay(new Date(date.getFullYear(), date.getMonth() + 1, 0));
+
+            const count = await prisma.expediente.count({
+                where: {
+                    fecha_radicacion: {
+                        gte: start,
+                        lte: end
+                    }
+                }
+            });
+
+            trend.push({
+                name: format(date, 'MMM'),
+                casos: count
+            });
+        }
+
         res.json({
             success: true,
             data: {
@@ -55,6 +78,7 @@ const getStats = async (req, res) => {
                     alto: riesgoAlto,
                     critico: riesgoCritico
                 },
+                trend: trend,
                 recentActivity: actividadReciente.map(act => ({
                     id: act.id,
                     user: `${act.usuario.nombres} ${act.usuario.apellidos}`,
