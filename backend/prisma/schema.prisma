@@ -24,6 +24,8 @@ model Persona {
   direccion        String?
   barrio           String?
   comuna           String?
+  latitud          Float?
+  longitud         Float?
   es_victima       Boolean  @default(false)
   es_agresor       Boolean  @default(false)
   created_at       DateTime @default(now())

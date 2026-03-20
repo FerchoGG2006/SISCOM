@@ -58,6 +58,10 @@ const radicarCaso = async (req, res) => {
                     tipo_documento: victima.tipo_documento,
                     telefono: victima.telefono_celular || victima.telefono,
                     direccion: victima.direccion,
+                    barrio: victima.barrio,
+                    comuna: victima.comuna,
+                    latitud: victima.latitud ? parseFloat(victima.latitud) : null,
+                    longitud: victima.longitud ? parseFloat(victima.longitud) : null,
                     es_victima: true
                 },
                 create: {
@@ -67,6 +71,10 @@ const radicarCaso = async (req, res) => {
                     apellidos: victimFullLastName,
                     telefono: victima.telefono_celular || victima.telefono,
                     direccion: victima.direccion,
+                    barrio: victima.barrio,
+                    comuna: victima.comuna,
+                    latitud: victima.latitud ? parseFloat(victima.latitud) : null,
+                    longitud: victima.longitud ? parseFloat(victima.longitud) : null,
                     es_victima: true
                 },
             });
@@ -79,6 +87,9 @@ const radicarCaso = async (req, res) => {
                     update: {
                         nombres: aggressorFullName,
                         apellidos: aggressorFullLastName,
+                        direccion: agresor.direccion,
+                        barrio: agresor.barrio,
+                        comuna: agresor.comuna,
                         es_agresor: true
                     },
                     create: {
@@ -86,6 +97,9 @@ const radicarCaso = async (req, res) => {
                         tipo_documento: agresor.tipo_documento || 'CC',
                         nombres: aggressorFullName,
                         apellidos: aggressorFullLastName,
+                        direccion: agresor.direccion,
+                        barrio: agresor.barrio,
+                        comuna: agresor.comuna,
                         es_agresor: true
                     },
                 });

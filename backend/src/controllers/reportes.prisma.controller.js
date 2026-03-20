@@ -86,14 +86,32 @@ class ReportesPrismaController {
                 });
             }
 
-            // Agrupar por Barrio (Mapa de calor geográfico)
-            const barriosRaw = await prisma.persona.groupBy({
-                by: ['barrio'],
+            // Agrupar por Barrio con Geolocalización
+            const victimasGeo = await prisma.persona.findMany({
                 where: { es_victima: true, barrio: { not: null } },
-                _count: { id: true },
-                orderBy: { _count: { id: 'desc' } },
-                take: 10
+                select: { barrio: true, latitud: true, longitud: true }
             });
+
+            const porBarrioMap = {};
+            victimasGeo.forEach(v => {
+                if (!porBarrioMap[v.barrio]) {
+                    porBarrioMap[v.barrio] = { barrio: v.barrio, cantidad: 0, lats: [], lngs: [] };
+                }
+                porBarrioMap[v.barrio].cantidad++;
+                if (v.latitud && v.longitud) {
+                    porBarrioMap[v.barrio].lats.push(v.latitud);
+                    porBarrioMap[v.barrio].lngs.push(v.longitud);
+                }
+            });
+
+            const porBarrio = Object.values(porBarrioMap).map(b => ({
+                barrio: b.barrio,
+                cantidad: b.cantidad,
+                lat: b.lats.length > 0 ? b.lats.reduce((a, b) => a + b, 0) / b.lats.length : null,
+                lng: b.lngs.length > 0 ? b.lngs.reduce((a, b) => a + b, 0) / b.lngs.length : null
+            })).sort((a, b) => b.cantidad - a.cantidad).slice(0, 10);
+
+            console.log('STATS porBarrio:', JSON.stringify(porBarrio, null, 2));
 
             // Reporte resumido
             res.json({
@@ -111,10 +129,7 @@ class ReportesPrismaController {
                         otros: Math.floor(totalCasos * 0.1)
                     },
                     tendenciaMensual,
-                    porBarrio: barriosRaw.map(b => ({
-                        barrio: b.barrio,
-                        cantidad: b._count.id
-                    })),
+                    porBarrio,
                     usuariosSummary: usuariosRaw.map(u => ({
                         nombre: `${u.nombres} ${u.apellidos}`,
                         actuaciones: u._count.actuaciones
