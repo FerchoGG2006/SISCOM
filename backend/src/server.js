@@ -14,7 +14,7 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 
 const app = express();
 
-const PORT = process.env.PORT || 4000; // Standardize port
+const PORT = process.env.PORT || 3001; // Sincronizado con Dockerfile
 
 // Middleware
 app.use(helmet());
@@ -54,7 +54,7 @@ const { Server } = require('socket.io');
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: process.env.CORS_ORIGIN || 'http://localhost:4001',
+        origin: '*', // Permitir conexiones desde cualquier origen en desarrollo/producción controlada
         methods: ['GET', 'POST', 'PATCH', 'DELETE']
     }
 });

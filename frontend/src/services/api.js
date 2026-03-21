@@ -1,7 +1,18 @@
 import axios from 'axios'
 
+const getBaseURL = () => {
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+            // Si estamos en producción, asumimos que el backend está en el mismo dominio bajo /api
+            return `${window.location.protocol}//${hostname}:4000/api/v1`;
+        }
+    }
+    return 'http://localhost:4000/api/v1';
+};
+
 const api = axios.create({
-    baseURL: 'http://localhost:4000/api/v1',
+    baseURL: getBaseURL(),
     headers: {
         'Content-Type': 'application/json'
     }

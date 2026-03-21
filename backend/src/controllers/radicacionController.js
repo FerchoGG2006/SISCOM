@@ -352,7 +352,12 @@ const radicarCaso = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error en radicacion Prisma:', error);
+        console.error('======= ERROR CRITICO EN RADICACION =======');
+        console.error('Mensaje:', error.message);
+        console.error('Código:', error.code);
+        console.error('Stack:', error.stack);
+        console.error('===========================================');
+
         res.status(500).json({
             success: false,
             message: 'Fallo táctico en la radicación',
