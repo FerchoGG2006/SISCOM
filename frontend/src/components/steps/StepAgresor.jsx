@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { UserX, Search, Loader2, Check } from 'lucide-react'
 import api from '../../services/api'
+import { LISTA_BARRIOS, getComunaByBarrio } from '../../constants/geografia'
 
 const PARENTESCOS = [
     { value: 'esposo', label: 'Esposo' },
@@ -26,7 +27,21 @@ export default function StepAgresor({ data, onUpdate }) {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
-        onUpdate({ [name]: type === 'checkbox' ? checked : value })
+        const newValue = type === 'checkbox' ? checked : value
+
+        onUpdate({ [name]: newValue })
+
+        // Auto-llenado de comuna por barrio
+        if (name === 'barrio') {
+            const comunaMapped = getComunaByBarrio(value)
+            if (comunaMapped) {
+                onUpdate({
+                    barrio: value,
+                    comuna: comunaMapped
+                })
+            }
+        }
+
         if (name === 'numero_documento') setFound(false);
     }
 
@@ -241,8 +256,23 @@ export default function StepAgresor({ data, onUpdate }) {
                             name="barrio"
                             className="form-input"
                             placeholder="Barrio"
+                            list="lista-barrios"
                             value={data.barrio || ''}
                             onChange={handleChange}
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label className="form-label">Comuna</label>
+                        <input
+                            type="text"
+                            name="comuna"
+                            className="form-input"
+                            placeholder="Comuna"
+                            value={data.comuna || ''}
+                            onChange={handleChange}
+                            readOnly
+                            style={{ background: 'var(--gray-50)', cursor: 'not-allowed' }}
                         />
                     </div>
 
@@ -354,5 +384,11 @@ const BooleanToggle = ({ label, value, onChange }) => (
                 NO
             </button>
         </div>
+
+        <datalist id="lista-barrios">
+            {LISTA_BARRIOS.map(barrio => (
+                <option key={barrio} value={barrio} />
+            ))}
+        </datalist>
     </div>
 )

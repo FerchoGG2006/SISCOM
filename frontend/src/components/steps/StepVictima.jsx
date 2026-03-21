@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { User, Search, Loader2, Check } from 'lucide-react'
+import { User, Search, Loader2, Check, MapPin, MapPinOff, Navigation } from 'lucide-react'
 import api from '../../services/api'
+import { LISTA_BARRIOS, getComunaByBarrio } from '../../constants/geografia'
 
 const TIPOS_DOCUMENTO = [
     { value: 'CC', label: 'Cédula de Ciudadanía' },
@@ -40,8 +41,46 @@ export default function StepVictima({ data, onUpdate }) {
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target
-        onUpdate({ [name]: type === 'checkbox' ? checked : value })
+        const newValue = type === 'checkbox' ? checked : value
+
+        onUpdate({ [name]: newValue })
+
+        // Auto-llenar comuna si se selecciona un barrio de la lista
+        if (name === 'barrio') {
+            const comunaMapped = getComunaByBarrio(value)
+            if (comunaMapped) {
+                onUpdate({
+                    barrio: value,
+                    comuna: comunaMapped
+                })
+            }
+        }
+
         if (name === 'numero_documento') setFound(false);
+    }
+
+    const [locating, setLocating] = useState(false);
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+            alert("Su navegador no soporta geolocalización");
+            return;
+        }
+        setLocating(true);
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                onUpdate({
+                    latitud: pos.coords.latitude,
+                    longitud: pos.coords.longitude
+                });
+                setLocating(false);
+            },
+            (err) => {
+                console.error(err);
+                setLocating(false);
+                alert("No se pudo obtener la ubicación. Por favor permita el acceso.");
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
     }
 
     const handleSearch = async () => {
@@ -282,16 +321,45 @@ export default function StepVictima({ data, onUpdate }) {
                 </div>
 
                 <div className="form-row">
-                    <div className="form-group">
+                    <div className="form-group" style={{ flex: '2' }}>
                         <label className="form-label">Dirección de Residencia</label>
-                        <input
-                            type="text"
-                            name="direccion"
-                            className="form-input"
-                            placeholder="Calle/Carrera # - #"
-                            value={data.direccion || ''}
-                            onChange={handleChange}
-                        />
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                            <input
+                                type="text"
+                                name="direccion"
+                                className="form-input"
+                                placeholder="Calle/Carrera # - #"
+                                value={data.direccion || ''}
+                                onChange={handleChange}
+                                style={{ flex: 1 }}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleGetLocation}
+                                disabled={locating}
+                                title="Capturar ubicación GPS actual"
+                                style={{
+                                    padding: '0 12px',
+                                    borderRadius: '12px',
+                                    border: '1px solid var(--gray-200)',
+                                    background: locating ? 'var(--gray-100)' : 'white',
+                                    color: locating ? 'var(--gray-400)' : 'var(--primary)',
+                                    cursor: locating ? 'not-allowed' : 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                                }}
+                            >
+                                {locating ? <Loader2 size={18} className="spinner" /> : (data.latitud ? <MapPin size={18} color="#10B981" /> : <MapPin size={18} />)}
+                            </button>
+                        </div>
+                        {data.latitud && (
+                            <div style={{ fontSize: '0.7rem', color: '#10B981', marginTop: '4px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <Navigation size={10} /> GPS capturado: {data.latitud.toFixed(4)}, {data.longitud.toFixed(4)}
+                            </div>
+                        )}
                     </div>
 
                     <div className="form-group">
@@ -301,6 +369,7 @@ export default function StepVictima({ data, onUpdate }) {
                             name="barrio"
                             className="form-input"
                             placeholder="Nombre del barrio"
+                            list="lista-barrios"
                             value={data.barrio || ''}
                             onChange={handleChange}
                         />
@@ -315,9 +384,17 @@ export default function StepVictima({ data, onUpdate }) {
                             placeholder="Comuna"
                             value={data.comuna || ''}
                             onChange={handleChange}
+                            readOnly
+                            style={{ background: 'var(--gray-50)', cursor: 'not-allowed' }}
                         />
                     </div>
                 </div>
+
+                <datalist id="lista-barrios">
+                    {LISTA_BARRIOS.map(barrio => (
+                        <option key={barrio} value={barrio} />
+                    ))}
+                </datalist>
             </div>
 
             <div className="form-section form-section-card">

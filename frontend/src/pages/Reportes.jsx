@@ -381,7 +381,13 @@ export default function Reportes() {
                 <h3><Search size={20} /> Análisis Geográfico: Barrios con Mayor Incidencia</h3>
                 <div style={{ width: '100%', height: 400 }}>
                     <ResponsiveContainer>
-                        <BarChart data={stats.porBarrio?.map(b => ({ name: b.barrio, count: b.cantidad }))}>
+                        <BarChart data={stats.porBarrio?.map(b => ({ name: b.barrio || 'Sin Barrio', count: b.cantidad || 0 }))}>
+                            <defs>
+                                <linearGradient id="colorHeat" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.8} />
+                                </linearGradient>
+                            </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
                             <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
                             <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
@@ -389,12 +395,6 @@ export default function Reportes() {
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                             />
                             <Bar dataKey="count" fill="url(#colorHeat)" radius={[10, 10, 0, 0]}>
-                                <defs>
-                                    <linearGradient id="colorHeat" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor="#F59E0B" stopOpacity={0.8} />
-                                    </linearGradient>
-                                </defs>
                                 {stats.porBarrio?.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={index < 3 ? '#EF4444' : '#F59E0B'} />
                                 ))}
@@ -407,44 +407,53 @@ export default function Reportes() {
                 </p>
             </ChartCard>
 
-            {/* Mapa de Distribución de Casos (Fase 18) */}
+            {/* Mapa de Distribución de Casos (Fase 18/20) - Blindado contra fallos */}
             <ChartCard>
-                <h3><Search size={20} /> Mapa de Concentración de Casos</h3>
-                {/* 
+                <h3><Search size={20} /> Mapa de Concentración de Casos (Heatmap)</h3>
+
                 <div style={{ width: '100%', height: 450, borderRadius: '12px', overflow: 'hidden', marginTop: '1rem', border: '1px solid var(--gray-200)', zIndex: 0 }}>
-                    <MapContainer center={[4.6097, -74.0817]} zoom={12} style={{ height: '100%', width: '100%' }}>
-                        <TileLayer
-                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        />
-                        {stats.porBarrio?.map((b, idx) => {
-                            const lat = 4.6097 + (Math.sin(idx * 2.1) * 0.04);
-                            const lng = -74.0817 + (Math.cos(idx * 2.1) * 0.04);
-                            const radius = Math.min(Math.max(15, b.cantidad * 4), 40);
-                            const color = b.cantidad >= 5 ? '#EF4444' : (b.cantidad >= 2 ? '#F59E0B' : '#4F46E5');
-                            return (
-                                <CircleMarker
-                                    key={idx}
-                                    center={[lat, lng]}
-                                    radius={radius}
-                                    pathOptions={{ color, fillColor: color, fillOpacity: 0.6, weight: 2 }}
-                                >
-                                    <LeafletTooltip>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <strong style={{ display: 'block', fontSize: '1.1rem', marginBottom: '4px' }}>{b.barrio}</strong>
-                                            <span style={{ color: color, fontWeight: 'bold' }}>{b.cantidad} casos activos</span>
-                                        </div>
-                                    </LeafletTooltip>
-                                </CircleMarker>
-                            )
-                        })}
-                    </MapContainer>
+                    {(stats.porBarrio && stats.porBarrio.some(b => b.lat && b.lng)) ? (
+                        <MapContainer
+                            key={`map-${stats.totalCasos}-${stats.porBarrio.length}`}
+                            center={[10.4631, -73.2532]} // VALLEDUPAR
+                            zoom={13}
+                            style={{ height: '100%', width: '100%' }}
+                        >
+                            <TileLayer
+                                url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            />
+                            {stats.porBarrio.filter(b => b.lat && b.lng && !isNaN(b.lat) && !isNaN(b.lng)).map((b, idx) => {
+                                const radius = Math.min(Math.max(15, (b.cantidad || 1) * 8), 50);
+                                const color = b.cantidad >= 5 ? '#EF4444' : (b.cantidad >= 2 ? '#F59E0B' : '#4F46E5');
+                                return (
+                                    <CircleMarker
+                                        key={`marker-${b.barrio}-${idx}`}
+                                        center={[b.lat, b.lng]}
+                                        radius={radius}
+                                        pathOptions={{ color, fillColor: color, fillOpacity: 0.6, weight: 2 }}
+                                    >
+                                        <LeafletTooltip>
+                                            <div style={{ textAlign: 'center' }}>
+                                                <strong style={{ display: 'block', fontSize: '1.1rem', marginBottom: '4px' }}>{b.barrio}</strong>
+                                                <span style={{ color: color, fontWeight: 'bold' }}>{b.cantidad} {b.cantidad === 1 ? 'caso' : 'casos'}</span>
+                                            </div>
+                                        </LeafletTooltip>
+                                    </CircleMarker>
+                                )
+                            })}
+                        </MapContainer>
+                    ) : (
+                        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', background: 'var(--gray-50)', gap: '1rem' }}>
+                            <Search size={32} color="var(--gray-300)" />
+                            <p style={{ color: 'var(--gray-500)', fontWeight: 600 }}>No hay suficientes datos geográficos para este periodo.</p>
+                            <p style={{ color: 'var(--gray-400)', fontSize: '0.8rem' }}>Geolocalice casos en la radicación para activar la visualización.</p>
+                        </div>
+                    )}
                 </div>
-                */}
-                <div style={{ padding: '2rem', background: 'var(--gray-50)', borderRadius: '16px', textAlign: 'center', border: '1px solid var(--gray-200)' }}>
-                    <Search size={32} color="var(--gray-400)" style={{ marginBottom: '1rem' }} />
-                    <p style={{ color: 'var(--gray-600)', fontWeight: 600 }}>Mapa de calor geográfico temporalmente en mantenimiento.</p>
-                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', marginTop: '0.5rem' }}>
+                    * El mapa muestra la concentración de casos en Valledupar basándose en la geolocalización real de las víctimas.
+                </p>
             </ChartCard>
         </Container>
     );
