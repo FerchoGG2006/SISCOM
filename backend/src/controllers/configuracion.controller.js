@@ -33,13 +33,19 @@ class ConfiguracionController {
     static async actualizar(req, res) {
         const data = req.body;
 
-        // No permitir cambiar el ID
+        // Limpiar campos protegidos generados automáticamente
         delete data.id;
+        delete data.created_at;
+        delete data.updated_at;
 
         try {
-            const updated = await prisma.configuracion.update({
+            const updated = await prisma.configuracion.upsert({
                 where: { id: 1 },
-                data: data
+                update: data,
+                create: {
+                    id: 1,
+                    ...data
+                }
             });
 
             res.json({ success: true, message: 'Configuración actualizada exitosamente', data: updated });

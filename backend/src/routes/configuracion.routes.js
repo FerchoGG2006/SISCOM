@@ -8,8 +8,8 @@ const configuracionController = require('../controllers/configuracion.controller
 router.use(authMiddleware);
 // router.use(roleMiddleware('admin')); // Eliminado para permitir GET por comisario
 
-router.get('/preview/:template', roleMiddleware('admin', 'comisario'), configuracionController.vistaPrevia);
-router.get('/', roleMiddleware('admin', 'comisario'), configuracionController.obtener);
-router.put('/', roleMiddleware('admin'), configuracionController.actualizar);
+router.get('/preview/:template', roleMiddleware('administrador', 'admin', 'comisario'), configuracionController.vistaPrevia);
+router.get('/', roleMiddleware('administrador', 'admin', 'comisario'), configuracionController.obtener);
+router.put('/', roleMiddleware('administrador', 'admin'), configuracionController.actualizar);
 
 module.exports = router;

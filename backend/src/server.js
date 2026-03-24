@@ -21,6 +21,17 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+// Log incoming HTTP requests
+app.use((req, res, next) => {
+    console.log(`[HTTP] ${req.method} ${req.url}`);
+    res.on('finish', () => {
+        if (res.statusCode >= 400 || req.url.includes('/configuracion')) {
+            console.log(`[HTTP ERROR/CONFIG] ${req.method} ${req.url} -> ${res.statusCode}`);
+        }
+    });
+    next();
+});
+
 // Servir archivos estáticos (PDFs generados)
 app.use('/documentos', express.static(path.join(__dirname, '../uploads/documentos')));
 
