@@ -16,7 +16,9 @@ import {
   UserCog,
   Activity,
   Clock,
-  Bell
+  Bell,
+  CalendarDays,
+  Network
 } from 'lucide-react';
 
 import { Outlet } from 'react-router-dom';
@@ -157,6 +159,8 @@ export const Layout = () => {
 
   const menuItems = [
     { icon: <BarChart3 size={20} />, label: 'Dashboard', path: '/' },
+    { icon: <CalendarDays size={20} />, label: 'Agenda Legal', path: '/agenda' },
+    { icon: <Network size={20} />, label: 'Análisis de Redes', path: '/redes' },
     { icon: <FileText size={20} />, label: 'Radicación', path: '/radicacion' },
     { icon: <Activity size={20} />, label: 'Flujo Kanban', path: '/kanban' },
     { icon: <Users size={20} />, label: 'Expedientes', path: '/expedientes' },

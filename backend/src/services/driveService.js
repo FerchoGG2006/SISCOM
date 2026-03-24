@@ -235,3 +235,36 @@ exports.uploadBase64 = async (folderId, base64, fileName, mimeType) => {
     }
 };
 
+/**
+ * Descarga el contenido de un archivo de Drive como Buffer (para Foliado)
+ * @param {string} fileIdOrUrl ID del archivo o WebViewLink
+ * @returns {Promise<Buffer|null>}
+ */
+exports.getFileBuffer = async (fileIdOrUrl) => {
+    const drive = getDriveClient();
+    if (!drive || fileIdOrUrl.startsWith('simulated_') || fileIdOrUrl === 'PENDING_RETRY') {
+        return null;
+    }
+
+    let fileId = fileIdOrUrl;
+    // Extract ID if it's a webViewLink
+    if (fileId.includes('/d/')) {
+        const match = fileId.match(/\/d\/(.*?)\//);
+        if (match && match[1]) fileId = match[1];
+    } else if (fileId.includes('id=')) {
+        const urlParams = new URLSearchParams(fileId.substring(fileId.indexOf('?')));
+        fileId = urlParams.get('id') || fileId;
+    }
+
+    try {
+        const response = await drive.files.get(
+            { fileId: fileId, alt: 'media' },
+            { responseType: 'arraybuffer' }
+        );
+        return Buffer.from(response.data);
+    } catch (error) {
+        logger.error(`Error descargando archivo ${fileId} como buffer:`, error.message);
+        return null; // Fallback silently for simulated files
+    }
+};
+

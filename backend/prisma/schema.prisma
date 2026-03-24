@@ -64,15 +64,17 @@ model Expediente {
   actuaciones   Actuacion[]
   documentos    Documento[]
   audiencias    Audiencia[]
+  tokenConsulta TokenConsulta?
 
   @@map("expedientes")
 }
 
-// 7. Tabla de Audiencias
+// 7. Tabla de Audiencias y Citas
 model Audiencia {
   id               Int      @id @default(autoincrement())
   id_expediente    Int
   fecha_programada DateTime
+  tipo             String   @default("Audiencia") // 'Audiencia', 'Psicología', 'Trabajo Social'
   lugar            String   @default("Sala de Audiencias Comisaría")
   estado           String   @default("Programada") // 'Programada', 'Realizada', 'Cancelada'
   observaciones    String?
@@ -191,3 +193,15 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// 10. Tabla de Portal Ciudadano (Módulo 3)
+model TokenConsulta {
+  id               Int      @id @default(autoincrement())
+  id_expediente    Int      @unique
+  pin              String   
+  activo           Boolean  @default(true)
+  created_at       DateTime @default(now())
+  
+  expediente Expediente @relation(fields: [id_expediente], references: [id])
+
+  @@map("tokens_consulta")
+}

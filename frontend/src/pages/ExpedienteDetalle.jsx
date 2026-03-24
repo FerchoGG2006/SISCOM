@@ -398,14 +398,18 @@ export default function ExpedienteDetalle() {
   const handleAction = async (type) => {
     setGenerating(true);
     try {
-      // Mock API call or real one
-      if (type.includes('doc')) {
+      if (type === 'compilar') {
+        const res = await api.post(`/compile/${id}`);
+        if (res.data.success) {
+           alert(`¡Éxito! Expediente compilado y foliado. Total folios: ${res.data.data.folios}.`);
+        }
+      } else if (type.includes('doc')) {
         await api.post(`/expedientes/${id}/documentos/${type.replace('doc-', '')}`);
         alert('Documento generado');
       }
       loadData();
     } catch (e) {
-      alert('Error en la acción');
+      alert(e.response?.data?.message || 'Error en la acción');
     } finally {
       setGenerating(false);
     }
@@ -567,7 +571,16 @@ export default function ExpedienteDetalle() {
             {activeTab === 'docs' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 <div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--gray-800)' }}>Bóveda de Evidencias</h3>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--gray-800)', margin: 0 }}>Bóveda de Evidencias</h3>
+                    <button 
+                      onClick={() => handleAction('compilar')} 
+                      disabled={generating}
+                      style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '12px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: generating ? 'not-allowed' : 'pointer', boxShadow: '0 4px 12px rgba(79, 70, 229, 0.3)' }}
+                    >
+                      <Folder size={18} /> {generating ? 'Procesando Folios...' : 'Compilar y Foliar PDF'}
+                    </button>
+                  </div>
                   <EvidenceVault
                     expedienteId={id}
                     documentos={expediente.documentos}

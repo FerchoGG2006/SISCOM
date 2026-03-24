@@ -16,6 +16,9 @@ import Configuracion from './pages/Configuracion';
 import Personas from './pages/Personas';
 import CasosKanban from './pages/CasosKanban';
 import Auditoria from './pages/Auditoria';
+import Agenda from './pages/Agenda';
+import Redes from './pages/Redes';
+import ConsultaPublica from './pages/ConsultaPublica';
 
 
 function PrivateRoute({ children }) {
@@ -30,8 +33,9 @@ function App() {
             <BrowserRouter>
                 <GlobalSearch />
                 <Routes>
-
                     <Route path="/login" element={<Login />} />
+                    <Route path="/consulta" element={<ConsultaPublica />} />
+                    
                     <Route path="/" element={
                         <PrivateRoute>
                             <Layout />
@@ -42,6 +46,8 @@ function App() {
                         <Route path="expedientes" element={<Expedientes />} />
                         <Route path="kanban" element={<CasosKanban />} />
                         <Route path="expedientes/:id" element={<ExpedienteDetalle />} />
+                        <Route path="agenda" element={<Agenda />} />
+                        <Route path="redes" element={<Redes />} />
                         <Route path="usuarios" element={<Usuarios />} />
                         <Route path="auditoria" element={<Auditoria />} />
                         <Route path="reportes" element={<Reportes />} />

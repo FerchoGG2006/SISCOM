@@ -159,6 +159,7 @@ export default function RadicarCaso() {
                     puntajeRiesgo: response.data.data.riskResult?.puntajeTotal || 0,
                     expedienteId: response.data.data.expediente.id,
                     pdfUrl: response.data.data.pdf_url,
+                    pinConsultas: response.data.data.pinConsultas,
                     alertas: []
                 })
             }
@@ -198,6 +199,12 @@ export default function RadicarCaso() {
                             <span className="label">Puntaje:</span>
                             <span className="value">{success.puntajeRiesgo} puntos</span>
                         </div>
+                        {success.pinConsultas && (
+                        <div className="detail-item" style={{ gridColumn: 'span 2', background: 'rgba(59, 130, 246, 0.1)', border: '1px dashed var(--primary)', borderRadius: '12px', padding: '15px', marginTop: '10px', textAlign: 'center' }}>
+                            <span className="label" style={{ color: 'var(--primary)', marginBottom: '5px', display: 'block', textTransform: 'uppercase', fontWeight: 800 }}>PIN de Consulta Ciudadana (Entregar a Víctima)</span>
+                            <span className="value" style={{ fontSize: '1.8rem', letterSpacing: '6px', fontWeight: 900, color: 'var(--text-main)' }}>{success.pinConsultas}</span>
+                        </div>
+                        )}
                     </div>
                     <div className="success-actions" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%' }}>

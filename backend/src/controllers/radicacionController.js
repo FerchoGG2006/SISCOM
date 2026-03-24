@@ -126,6 +126,7 @@ const radicarCaso = async (req, res) => {
             }
 
             const radicado = `HS-${year}-${String(consecutive).padStart(5, '0')}`;
+            const pinConsultas = Math.floor(100000 + Math.random() * 900000).toString();
 
             // 6. Crear Expediente
             const expediente = await tx.expediente.create({
@@ -140,6 +141,9 @@ const radicarCaso = async (req, res) => {
                     firma_victima: firma,
                     metadata_firma: JSON.stringify(req.body.metadata_biometrica || {}),
                     drive_folder_id: 'PENDING',
+                    tokenConsulta: {
+                        create: { pin: pinConsultas }
+                    }
                 }
             });
 
@@ -166,7 +170,7 @@ const radicarCaso = async (req, res) => {
                 }
             });
 
-            return { expediente, radicado, riskResult, finalUsuarioId };
+            return { expediente, radicado, riskResult, finalUsuarioId, pinConsultas };
         });
 
         // Registrar Auditoría fuera de la transacción para evitar lock en SQLite

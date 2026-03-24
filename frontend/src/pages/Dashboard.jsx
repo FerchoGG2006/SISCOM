@@ -84,14 +84,16 @@ export default function Dashboard() {
   const [recentCases, setRecentCases] = useState([]);
   const [distribution, setDistribution] = useState([]);
   const [trend, setTrend] = useState([]);
+  const [citas, setCitas] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [statsRes, casesRes] = await Promise.all([
+        const [statsRes, casesRes, citasRes] = await Promise.all([
           api.get('/dashboard/stats'),
-          api.get('/expedientes', { params: { limit: 5 } })
+          api.get('/expedientes', { params: { limit: 5 } }),
+          api.get('/calendario').catch(() => ({ data: [] }))
         ]);
 
         if (statsRes.data && statsRes.data.success) {
@@ -109,6 +111,13 @@ export default function Dashboard() {
             { name: 'Crítico', value: d.risk.critico }
           ]);
           setTrend(d.trend || []);
+        }
+
+        if (citasRes.data && Array.isArray(citasRes.data)) {
+          const futuras = citasRes.data
+            .filter(ev => new Date(ev.start) >= new Date().setHours(0,0,0,0))
+            .slice(0, 3);
+          setCitas(futuras);
         }
 
         if (casesRes.data && casesRes.data.success) {
@@ -301,6 +310,26 @@ export default function Dashboard() {
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', fontWeight: 600, opacity: 0.7 }}>Ok - dev.db (Active)</p>
               </div>
             </div>
+          </div>
+        </GlassCard>
+
+        {/* Próximas Citas Widget */}
+        <GlassCard style={{ padding: '1.5rem', marginTop: '2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>Próximas Citas</h3>
+             <Link to="/agenda" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 700, textDecoration: 'none' }}>Calendario →</Link>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {citas.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No hay citas próximas.</p> : citas.map(cita => (
+               <div key={cita.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', padding: '1rem', background: 'rgba(59, 130, 246, 0.05)', borderRadius: '8px', borderLeft: `4px solid ${cita.backgroundColor || 'var(--primary)'}` }}>
+                 <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{cita.title.split('-')[0].trim()}</strong>
+                 <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{cita.extendedProps?.radicado}</div>
+                 <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 700 }}>
+                    <Clock size={12} style={{ display: 'inline', marginRight: '4px', position: 'relative', top: '2px' }}/>
+                    {new Date(cita.start).toLocaleString('es-CO', { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                 </span>
+               </div>
+            ))}
           </div>
         </GlassCard>
       </div>

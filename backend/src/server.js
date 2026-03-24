@@ -44,6 +44,10 @@ app.use('/api/v1/dms', require('./routes/dms.routes'));
 app.use('/api/v1/audit', require('./routes/audit.routes'));
 app.get('/api/v1/search', searchController.searchAll);
 app.use('/api/v1/stats', require('./routes/stats.routes'));
+app.use('/api/v1/calendario', require('./routes/calendario.routes'));
+app.use('/api/v1/portal', require('./routes/portal.routes'));
+app.use('/api/v1/redes', require('./routes/redes.routes'));
+app.use('/api/v1/compile', require('./routes/pdfCompiler.routes'));
 
 
 
