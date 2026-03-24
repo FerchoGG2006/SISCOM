@@ -11,7 +11,6 @@ const PageContainer = styled.div`
   height: calc(100vh - 40px);
   display: flex;
   flex-direction: column;
-  color: white;
 `;
 
 const Header = styled.div`
@@ -27,6 +26,7 @@ const Title = styled.h1`
   display: flex;
   align-items: center;
   gap: 1rem;
+  color: var(--gray-900);
 `;
 
 const GraphWrapper = styled.div`
@@ -44,7 +44,12 @@ const FloatingPanel = styled(GlassCard)`
   top: 20px;
   right: 20px;
   width: 320px;
-  background: rgba(30, 41, 59, 0.85);
+  background: white;
+  border: 1px solid rgba(229, 231, 235, 0.8);
+  border-radius: 20px;
+  padding: 1.5rem;
+  color: var(--gray-900);
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
   pointer-events: auto;
   z-index: 10;
 `;
@@ -134,7 +139,7 @@ export default function Redes() {
                     <Network size={36} color="#3b82f6" />
                     Análisis de Reincidencia (Redes)
                 </Title>
-                <div style={{ display: 'flex', gap: '15px' }}>
+                <div style={{ display: 'flex', gap: '15px', color: 'var(--text-main)', fontWeight: 600 }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '0.9rem' }}>
                         <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#b91c1c' }}></div>
                         Agresor Reincidente
@@ -193,26 +198,26 @@ export default function Redes() {
 
                 {selectedNode && (
                     <FloatingPanel>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem', marginBottom: '1rem' }}>
-                            <h3 style={{ fontSize: '1.1rem', margin: 0 }}>Detalles del Nodo</h3>
-                            <button onClick={() => setSelectedNode(null)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1.2rem' }}>&times;</button>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(229, 231, 235, 0.8)', paddingBottom: '0.8rem', marginBottom: '1rem' }}>
+                            <h3 style={{ fontSize: '1.2rem', margin: 0, color: 'var(--gray-900)', fontWeight: 800 }}>Detalles del Nodo</h3>
+                            <button onClick={() => setSelectedNode(null)} style={{ background: 'none', border: 'none', color: 'var(--gray-500)', cursor: 'pointer', fontSize: '1.5rem' }}>&times;</button>
                         </div>
 
                         {selectedNode.reincidente && (
-                            <div style={{ background: 'rgba(220, 38, 38, 0.2)', color: '#fca5a5', padding: '0.8rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: 700 }}>
+                            <div style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fca5a5', padding: '0.8rem', borderRadius: '12px', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: 700 }}>
                                 <AlertCircle size={18} />
                                 ¡ALERTA DE REINCIDENCIA!
                             </div>
                         )}
 
                         <div style={{ marginBottom: '1rem' }}>
-                            <span style={{ display: 'block', color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Identificador</span>
-                            <strong style={{ fontSize: '1.1rem' }}>{selectedNode.name}</strong>
+                            <span style={{ display: 'block', color: 'var(--gray-500)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.2rem', fontWeight: 600 }}>Identificador</span>
+                            <strong style={{ fontSize: '1.1rem', color: 'var(--gray-900)' }}>{selectedNode.name}</strong>
                         </div>
                         
                         <div style={{ marginBottom: '1rem' }}>
-                            <span style={{ display: 'block', color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Clase / Grupo</span>
-                            <span style={{ background: 'rgba(255,255,255,0.1)', padding: '0.3rem 0.8rem', borderRadius: '15px', fontSize: '0.85rem', textTransform: 'capitalize' }}>
+                            <span style={{ display: 'block', color: 'var(--gray-500)', fontSize: '0.8rem', textTransform: 'uppercase', marginBottom: '0.2rem', fontWeight: 600 }}>Clase / Grupo</span>
+                            <span style={{ background: 'var(--gray-100)', color: 'var(--gray-700)', padding: '0.3rem 0.8rem', borderRadius: '15px', fontSize: '0.85rem', textTransform: 'capitalize', fontWeight: 700 }}>
                                 {selectedNode.group}
                             </span>
                         </div>

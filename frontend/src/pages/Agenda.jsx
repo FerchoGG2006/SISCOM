@@ -5,6 +5,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
+import esLocale from '@fullcalendar/core/locales/es';
 import api from '../services/api';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,54 +18,100 @@ const PageContainer = styled.div`
 `;
 
 const Title = styled.h1`
-    color: #f1f5f9;
+    color: var(--gray-900);
     font-size: 2rem;
     margin-bottom: 1.5rem;
-    font-weight: 600;
+    font-weight: 800;
 `;
 
 const CalendarWrapper = styled.div`
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
+    background: white;
+    border: 1px solid rgba(229, 231, 235, 0.8);
+    border-radius: 20px;
     padding: 1.5rem;
     flex-grow: 1;
     min-height: 600px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 
     .fc {
-        color: #e2e8f0;
+        color: var(--gray-800);
         font-family: 'Inter', sans-serif;
     }
 
     .fc-theme-standard td, .fc-theme-standard th {
-        border-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(229, 231, 235, 0.8);
+    }
+
+    .fc-col-header-cell {
+        background: #f9fafb;
+        padding: 0.5rem 0;
+        color: var(--gray-600);
     }
 
     .fc-day-today {
-        background: rgba(59, 130, 246, 0.1) !important;
+        background: rgba(79, 70, 229, 0.05) !important;
     }
 
     .fc-event {
         cursor: pointer;
-        border-radius: 4px;
-        padding: 2px 4px;
+        border-radius: 6px;
         font-size: 0.85em;
         border: none;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .fc-daygrid-block-event, .fc-timegrid-event {
+        padding: 4px;
+        color: white !important;
+        font-weight: 600;
+        
+        .fc-event-title, .fc-event-time {
+            color: white !important;
+        }
+    }
+
+    .fc-daygrid-dot-event {
+        background: transparent !important;
+        padding: 4px;
+        font-weight: 600;
+        
+        &:hover {
+            background: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .fc-event-title, .fc-event-time {
+            color: var(--gray-800) !important;
+        }
+    }
+
+    .fc-toolbar-title {
+        font-weight: 800;
+        color: var(--gray-900);
+        text-transform: capitalize;
     }
 
     .fc-button-primary {
-        background-color: #3b82f6;
-        border-color: #3b82f6;
+        background-color: var(--primary);
+        border-color: var(--primary);
+        font-weight: 600;
+        text-transform: capitalize;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(79, 70, 229, 0.2);
+        
         &:hover {
-            background-color: #2563eb;
-            border-color: #2563eb;
+            background-color: var(--primary-dark);
+            border-color: var(--primary-dark);
         }
         &:disabled {
-            background-color: #1e3a8a;
-            border-color: #1e3a8a;
+            background-color: var(--gray-300);
+            border-color: var(--gray-300);
+            color: var(--gray-500);
         }
+    }
+    
+    .fc-button-active {
+        background-color: #3730A3 !important;
+        border-color: #3730A3 !important;
     }
 `;
 
@@ -81,19 +128,20 @@ const ModalOverlay = styled(motion.div)`
 `;
 
 const ModalContent = styled(motion.div)`
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 12px;
+    background: white;
+    border: 1px solid rgba(229, 231, 235, 0.8);
+    border-radius: 20px;
     padding: 2rem;
     width: 90%;
     max-width: 500px;
-    color: #f8fafc;
+    color: var(--gray-900);
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 `;
 
 const EventProp = styled.div`
-    margin-bottom: 1rem;
-    strong { color: #94a3b8; display: block; font-size: 0.85rem; margin-bottom: 0.2rem; }
-    span { color: #f1f5f9; font-size: 1.1rem; }
+    margin-bottom: 1.2rem;
+    strong { color: var(--gray-500); display: block; font-size: 0.85rem; margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    span { color: var(--gray-900); font-size: 1.1rem; font-weight: 600; }
 `;
 
 export default function Agenda() {
@@ -144,6 +192,7 @@ export default function Agenda() {
                         center: 'title',
                         right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
                     }}
+                    locales={[esLocale]}
                     locale="es"
                     firstDay={1}
                     events={events}
@@ -166,7 +215,7 @@ export default function Agenda() {
                             exit={{ y: 20, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <h2 style={{ marginBottom: '1.5rem', color: '#60a5fa' }}>{selectedEvent.title}</h2>
+                            <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary)', fontWeight: 800, fontSize: '1.5rem' }}>{selectedEvent.title}</h2>
                             <EventProp>
                                 <strong>Tipo de Cita</strong>
                                 <span>{selectedEvent.tipo}</span>
@@ -185,17 +234,19 @@ export default function Agenda() {
                             </EventProp>
                             <EventProp>
                                 <strong>Estado</strong>
-                                <span>{selectedEvent.estado}</span>
+                                <span style={{ color: selectedEvent.estado === 'Pendiente' ? '#ea580c' : '#059669' }}>{selectedEvent.estado}</span>
                             </EventProp>
                             
                             <button 
                                 onClick={() => setSelectedEvent(null)}
                                 style={{
                                     marginTop: '2rem', padding: '0.8rem 1.5rem', 
-                                    background: '#3f3f46', color: 'white', 
-                                    border: 'none', borderRadius: '8px', cursor: 'pointer',
-                                    width: '100%'
+                                    background: 'var(--gray-100)', color: 'var(--gray-800)', 
+                                    border: '1px solid var(--gray-200)', borderRadius: '12px', cursor: 'pointer',
+                                    width: '100%', fontWeight: 700, transition: 'all 0.2s'
                                 }}
+                                onMouseEnter={e => e.target.style.background = 'var(--gray-200)'}
+                                onMouseLeave={e => e.target.style.background = 'var(--gray-100)'}
                             >
                                 Cerrar
                             </button>

@@ -13,16 +13,16 @@ datasource db {
 model Persona {
   id               Int      @id @default(autoincrement())
   tipo_documento   String   // 'CC', 'TI', 'CE', 'RC', 'PPT', 'Otro'
-  numero_documento String   @unique
-  nombres          String
-  apellidos        String
+  numero_documento String   @unique /// @encrypted
+  nombres          String   /// @encrypted
+  apellidos        String   /// @encrypted
   fecha_nacimiento String?  // SQLite guarda fechas como TEXT (ISO8601)
-  genero           String?  // 'Femenino', 'Masculino', 'No Binario', 'Otro'
-  ocupacion        String?
+  genero           String?  /// @encrypted // 'Femenino', 'Masculino', 'No Binario', 'Otro'
+  ocupacion        String?  /// @encrypted
   escolaridad      String?
-  telefono         String?
-  direccion        String?
-  barrio           String?
+  telefono         String?  /// @encrypted
+  direccion        String?  /// @encrypted
+  barrio           String?  /// @encrypted
   comuna           String?
   latitud          Float?
   longitud         Float?

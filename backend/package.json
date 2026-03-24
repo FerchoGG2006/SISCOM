@@ -41,6 +41,7 @@
     "mysql2": "^3.6.5",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.14.0",
+    "prisma-field-encryption": "^1.6.0",
     "sharp": "^0.33.1",
     "socket.io": "^4.8.3",
     "sqlite": "^5.1.1",
