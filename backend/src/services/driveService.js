@@ -11,17 +11,32 @@ const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googl
  */
 const getDriveClient = () => {
     try {
+        const tokenPath = path.join(process.cwd(), 'credentials/token.json');
+        const oauthCredsPath = path.join(process.cwd(), 'credentials/oauth-credentials.json');
+
+        // Prioridad 1: OAuth 2.0 (Evita el error de cuota 0 bytes usando cuentas reales de Gmail / Workspace)
+        if (fs.existsSync(tokenPath) && fs.existsSync(oauthCredsPath)) {
+            const oauthCreds = JSON.parse(fs.readFileSync(oauthCredsPath));
+            const { client_secret, client_id, redirect_uris } = oauthCreds.installed || oauthCreds.web;
+            const oAuth2Client = new google.auth.OAuth2(client_id, client_secret, redirect_uris?.[0] || 'urn:ietf:wg:oauth:2.0:oob');
+            
+            oAuth2Client.setCredentials(JSON.parse(fs.readFileSync(tokenPath)));
+            return google.drive({ version: 'v3', auth: oAuth2Client });
+        }
+
+        // Prioridad 2: Cuenta de Servicio (Legacy / Fallback)
         const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
+        const resolvedCredsPath = credentialsPath ? path.resolve(process.cwd(), credentialsPath) : null;
 
         // Verificamos si existe el archivo de credenciales o las variables directas
-        if (credentialsPath && fs.existsSync(credentialsPath)) {
+        if (resolvedCredsPath && fs.existsSync(resolvedCredsPath)) {
             const auth = new google.auth.GoogleAuth({
-                keyFile: credentialsPath,
+                keyFile: resolvedCredsPath,
                 scopes: SCOPES,
             });
             return google.drive({ version: 'v3', auth });
         } else if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
-            // Alternativa: Cargar desde variables de entorno directas (bueno para Heroku/Docker)
+            // Alternativa: Cargar desde variables de entorno directas
             const auth = new google.auth.JWT(
                 process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
                 null,
@@ -30,6 +45,8 @@ const getDriveClient = () => {
             );
             return google.drive({ version: 'v3', auth });
         }
+        
+        logger.warn('No se encontraron credenciales de Google Drive (ni OAuth2 ni Service Account).');
         return null;
     } catch (error) {
         logger.error('Error inicializando cliente de Google Drive:', error);
